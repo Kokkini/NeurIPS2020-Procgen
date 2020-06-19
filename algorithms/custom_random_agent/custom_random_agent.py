@@ -2,6 +2,7 @@ import numpy as np
 
 from ray.rllib.agents.trainer import Trainer, with_common_config
 from ray.rllib.utils.annotations import override
+from ray.rllib.utils.framework import try_import_tf, TensorStructType
 
 """
 Note : This implementation has been adapted from : 
@@ -40,6 +41,20 @@ class CustomRandomAgent(Trainer):
             "episode_reward_mean": np.mean(rewards),
             "timesteps_this_iter": steps,
         }
+
+    @override(Trainer)
+    def compute_action(self,
+                       observation: TensorStructType,
+                       state: List[Any] = None,
+                       prev_action: TensorStructType = None,
+                       prev_reward: int = None,
+                       info: EnvInfoDict = None,
+                       policy_id: PolicyID = DEFAULT_POLICY_ID,
+                       full_fetch: bool = False,
+                       explore: bool = None) -> TensorStructType:
+        action = self.env.action_space.sample()
+        return action
+
 # __sphinx_doc_end__
 # don't enable yapf after, it's buggy here
 
