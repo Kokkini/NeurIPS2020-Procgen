@@ -2,7 +2,7 @@ import numpy as np
 
 from ray.rllib.agents.trainer import Trainer, with_common_config
 from ray.rllib.utils.annotations import override
-from ray.rllib.utils.framework import try_import_tf, TensorStructType
+# from ray.rllib.utils.framework import try_import_tf, TensorStructType
 
 """
 Note : This implementation has been adapted from : 
@@ -44,17 +44,16 @@ class CustomRandomAgent(Trainer):
 
     @override(Trainer)
     def compute_action(self,
-                       observation: TensorStructType,
-                       state: List[Any] = None,
-                       prev_action: TensorStructType = None,
-                       prev_reward: int = None,
-                       info: EnvInfoDict = None,
-                       policy_id: PolicyID = DEFAULT_POLICY_ID,
-                       full_fetch: bool = False,
-                       explore: bool = None) -> TensorStructType:
+                       observation,
+                       state=None,
+                       prev_action=None,
+                       prev_reward=None,
+                       info=None,
+                       policy_id=None,
+                       full_fetch=False,
+                       explore=None):
         action = self.env.action_space.sample()
         return action
-
 # __sphinx_doc_end__
 # don't enable yapf after, it's buggy here
 
