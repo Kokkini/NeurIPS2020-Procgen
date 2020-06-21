@@ -55,7 +55,7 @@ procgen-ppo:
         ################################################
         ################################################
         # Discount factor of the MDP.
-        gamma: 0.99
+        gamma: 0.999
         # The GAE(lambda) parameter.
         lambda: 0.95
         # The default learning rate.
@@ -78,7 +78,7 @@ procgen-ppo:
         # you set vf_share_layers: True.
         vf_loss_coeff: 0.5
         # Coefficient of the entropy regularizer.
-        entropy_coeff: 0.1
+        entropy_coeff: 0.01
         # PPO clip parameter.
         clip_param: 0.2
         # Clip param for the value function. Note that this is sensitive to the
@@ -198,7 +198,7 @@ procgen-ppo:
         ################################################
         # Number of rollout worker actors to create for parallel sampling. Setting
         # this to 0 will force rollouts to be done in the trainer actor.
-        num_workers: 6
+        num_workers: 1
 
         # Number of environments to evaluate vectorwise per worker. This enables
         # model inference batching, which can improve performance for inference

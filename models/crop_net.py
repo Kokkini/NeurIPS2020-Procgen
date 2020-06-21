@@ -29,7 +29,7 @@ def conv_sequence(x, depth, prefix):
     return x
 
 
-class MyVisionNetwork(TFModelV2):
+class CropNet(TFModelV2):
     """
     Network from IMPALA paper implemented in ModelV2 API.
 
@@ -42,10 +42,10 @@ class MyVisionNetwork(TFModelV2):
 
         depths = [16, 32, 32]
         self.crop_shape = [50,50,3]
-        self.pad_shape = [74, 74, 3]
+        # self.pad_shape = [74, 74, 3]
         # inputs = tf.keras.layers.Input(shape=obs_space.shape, name="observations")
-        # inputs = tf.keras.layers.Input(shape=self.crop_shape, name="observations")
-        inputs = tf.keras.layers.Input(shape=self.pad_shape, name="observations")
+        inputs = tf.keras.layers.Input(shape=self.crop_shape, name="observations")
+        # inputs = tf.keras.layers.Input(shape=self.pad_shape, name="observations")
         scaled_inputs = tf.cast(inputs, tf.float32) / 255.0
 
         x = scaled_inputs
@@ -65,18 +65,8 @@ class MyVisionNetwork(TFModelV2):
         # print(input_dict,flush=True)
         # exit()
         obs = tf.cast(input_dict["obs"], tf.float32)
-        # # random crop
-        # obs = tf.map_fn(lambda image: tf.image.random_crop(image, self.crop_shape), obs)
-        # random padding
-        obs = tf.map_fn(lambda image: tf.image.pad_to_bounding_box(image,
-                                                                   tf.random.uniform(shape=[], minval=0,
-                                                                                     maxval=self.pad_shape[0] - 64,
-                                                                                     dtype=tf.int64),
-                                                                   tf.random.uniform(shape=[], minval=0,
-                                                                                     maxval=self.pad_shape[1] - 64,
-                                                                                     dtype=tf.int64),
-                                                                   self.pad_shape[0], self.pad_shape[1]), obs)
-        print(obs)
+        # random crop
+        obs = tf.map_fn(lambda image: tf.image.random_crop(image, self.crop_shape), obs)
         logits, self._value = self.base_model(obs)
         return logits, state
 
@@ -85,4 +75,4 @@ class MyVisionNetwork(TFModelV2):
 
 
 # Register model in ModelCatalog
-ModelCatalog.register_custom_model("my_vision_network", MyVisionNetwork)
+ModelCatalog.register_custom_model("crop_net", CropNet)
