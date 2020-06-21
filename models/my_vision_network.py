@@ -76,7 +76,6 @@ class MyVisionNetwork(TFModelV2):
                                                                                      maxval=self.pad_shape[1] - 64,
                                                                                      dtype=tf.int64),
                                                                    self.pad_shape[0], self.pad_shape[1]), obs)
-        print(obs)
         logits, self._value = self.base_model(obs)
         return logits, state
 
