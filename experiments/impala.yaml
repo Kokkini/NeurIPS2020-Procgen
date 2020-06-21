@@ -55,7 +55,7 @@ procgen-ppo:
         ################################################
         ################################################
         # Discount factor of the MDP.
-        gamma: 0.999
+        gamma: 0.99
         # The GAE(lambda) parameter.
         lambda: 0.95
         # The default learning rate.
@@ -78,7 +78,7 @@ procgen-ppo:
         # you set vf_share_layers: True.
         vf_loss_coeff: 0.5
         # Coefficient of the entropy regularizer.
-        entropy_coeff: 0.01
+        entropy_coeff: 0.1
         # PPO clip parameter.
         clip_param: 0.2
         # Clip param for the value function. Note that this is sensitive to the
@@ -107,7 +107,7 @@ procgen-ppo:
         normalize_actions: False
         # Whether to clip rewards prior to experience postprocessing. Setting to
         # None means clip for Atari only.
-        clip_rewards: null
+        clip_rewards: True
         # Whether to np.clip() actions to the action space low/high range spec.
         clip_actions: True
         # Whether to use rllib or deepmind preprocessors by default
@@ -203,7 +203,7 @@ procgen-ppo:
         # Number of environments to evaluate vectorwise per worker. This enables
         # model inference batching, which can improve performance for inference
         # bottlenecked workloads.
-        num_envs_per_worker: 12
+        num_envs_per_worker: 64
 
         # Divide episodes into fragments of this many steps each during rollouts.
         # Sample batches of this size are collected from rollout workers and
