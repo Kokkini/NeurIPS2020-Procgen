@@ -16,7 +16,7 @@ procgen-ppo:
     # === Stop Conditions ===
     ################################################
     stop:
-        timesteps_total: 2500000
+        timesteps_total: 2000000
 
     ################################################
     # === Settings for Checkpoints ===
@@ -107,7 +107,7 @@ procgen-ppo:
         normalize_actions: False
         # Whether to clip rewards prior to experience postprocessing. Setting to
         # None means clip for Atari only.
-        clip_rewards: True
+        clip_rewards: null
         # Whether to np.clip() actions to the action space low/high range spec.
         clip_actions: True
         # Whether to use rllib or deepmind preprocessors by default
@@ -198,7 +198,7 @@ procgen-ppo:
         ################################################
         # Number of rollout worker actors to create for parallel sampling. Setting
         # this to 0 will force rollouts to be done in the trainer actor.
-        num_workers: 1
+        num_workers: 6
 
         # Number of environments to evaluate vectorwise per worker. This enables
         # model inference batching, which can improve performance for inference
