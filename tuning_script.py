@@ -28,7 +28,7 @@ with open("tune.sh", "w") as f:
         for key in d:
             command += f" {key} {d[key]}"
         logfile = os.path.join(args.logdir, f"exp_{i:03}.txt")
-        command += f" >> {logfile}"
+        command += f" >> \"{logfile}\""
         f.write(command+"\n")
         with open(logfile, "a") as f_log:
             f_log.write(command+"\n")
