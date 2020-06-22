@@ -143,10 +143,15 @@ def create_parser(parser_creator=None):
         "overrides any trial-specific options set via flags above.")
     parser.add_argument(
         "--vf-loss-coeff",
+        type=float,
         default=None)
     parser.add_argument(
         "--num-workers",
         default=1,
+        type=int)
+    parser.add_argument(
+        "--timesteps-total",
+        default=None,
         type=int)
     return parser
 
@@ -156,7 +161,10 @@ def run(args, parser):
     if args.config_file:
         with open(args.config_file) as f:
             experiments = yaml.safe_load(f)
+            print(experiments)
             for exp in experiments.values():
+                if args_dict["timesteps_total"] is not None:
+                    exp["stop"]["timesteps_total"] = args_dict["timesteps_total"]
                 for a in args_dict:
                     if a in exp["config"] and args_dict[a] is not None: exp["config"][a] = args_dict[a]
     else:
@@ -178,7 +186,7 @@ def run(args, parser):
                 "upload_dir": args.upload_dir,
             }
         }
-
+    print(experiments)
     verbose = 1
     for exp in experiments.values():
         # Bazel makes it hard to find files specified in `args` (and `data`).
