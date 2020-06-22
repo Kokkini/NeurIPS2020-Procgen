@@ -3,11 +3,9 @@ import argparse
 import os
 parser = argparse.ArgumentParser()
 
-num_experiments = 10
-
 parser.add_argument(
     "--num-exp",
-    default=10,
+    default=20,
     type=int)
 parser.add_argument(
     "--logdir",
@@ -29,7 +27,7 @@ with open("tune.sh", "w") as f:
         command = 'python train_tune.py -f ${EXPERIMENT:-"experiments/impala-tune.yaml"} --timesteps-total 3000000 --ray-memory ${RAY_MEMORY_LIMIT:-1500000000} --ray-num-cpus ${RAY_CPUS:-2} --ray-object-store-memory ${RAY_STORE_MEMORY:-1000000000}'
         for key in d:
             command += f" {key} {d[key]}"
-        logfile = os.path.join(args.logdir, f"exp_{i}.txt")
+        logfile = os.path.join(args.logdir, f"exp_{i:03}.txt")
         command += f" >> {logfile}"
         f.write(command+"\n")
         with open(logfile, "a") as f_log:
