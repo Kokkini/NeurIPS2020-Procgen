@@ -144,6 +144,10 @@ def create_parser(parser_creator=None):
     parser.add_argument(
         "--vf-loss-coeff",
         default=None)
+    parser.add_argument(
+        "--num-workers",
+        default=1,
+        type=int)
     return parser
 
 
