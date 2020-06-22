@@ -153,6 +153,26 @@ def create_parser(parser_creator=None):
         "--timesteps-total",
         default=None,
         type=int)
+    parser.add_argument(
+        "--lr",
+        default=None,
+        type=float)
+    parser.add_argument(
+        "--entropy-coeff",
+        default=None,
+        type=float)
+    parser.add_argument(
+        "--vf-clip-param",
+        default=None,
+        type=float)
+    parser.add_argument(
+        "--batch-mode",
+        default=None,
+        type=str)
+    parser.add_argument(
+        "--num-sgd-iter",
+        default=None,
+        type=int)
     return parser
 
 
