@@ -173,6 +173,10 @@ def create_parser(parser_creator=None):
         "--num-sgd-iter",
         default=None,
         type=int)
+    parser.add_argument(
+        "--exploration-config",
+        default=None,
+        type=str)
     return parser
 
 
@@ -185,6 +189,8 @@ def run(args, parser):
             for exp in experiments.values():
                 if args_dict["timesteps_total"] is not None:
                     exp["stop"]["timesteps_total"] = args_dict["timesteps_total"]
+                if args_dict["exploration_config"] is not None:
+                    exp["config"]["exploration_config"]["type"] = args_dict["exploration_config"]
                 for a in args_dict:
                     if a in exp["config"] and args_dict[a] is not None: exp["config"][a] = args_dict[a]
     else:
