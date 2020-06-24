@@ -270,7 +270,7 @@ procgen-ppo:
             # You can also provide the python class directly or the full location
             # of your class (e.g. "ray.rllib.utils.exploration.epsilon_greedy.
             # EpsilonGreedy)
-            type: "PerWorkerEpsilonGreedy"
+            type: "StochasticSampling"
             # Can add constructor kwargs here (if any)
 
         ################################################

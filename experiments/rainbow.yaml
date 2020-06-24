@@ -1,0 +1,53 @@
+procgen-rainbow:
+    env: procgen_env_wrapper
+    run: DQN
+    stop:
+        timesteps_total: 4000000
+    config:
+        num_atoms: 51
+        v_min: -10.0
+        v_max: 10.0
+        noisy: True
+        dueling: True
+        double_q: True
+        gamma: 0.999
+        lr: 5e-4
+        adam_epsilon: 1e-8
+        grad_clip: 40
+        # hiddens: [512]
+        learning_starts: 100000
+        buffer_size: 1000000
+        rollout_fragment_length: 4
+        train_batch_size: 32
+        explore: True,
+        # Provide a dict specifying the Exploration object's config.
+        exploration_config:
+            # The Exploration class to use. In the simplest case, this is the name
+            # (str) of any class present in the `rllib.utils.exploration` package.
+            # You can also provide the python class directly or the full location
+            # of your class (e.g. "ray.rllib.utils.exploration.epsilon_greedy.
+            # EpsilonGreedy)
+            type: "EpsilonGreedy"
+            # Can add constructor kwargs here (if any)
+            initial_epsilon: 1.0,
+            final_epsilon: 0.02,
+            epsilon_timesteps: 1000000
+        
+        evaluation_config:
+            explore: False
+
+        target_network_update_freq: 1000
+        prioritized_replay: True
+        prioritized_replay_alpha: 0.6
+        prioritized_replay_beta: 0.4
+        final_prioritized_replay_beta: 0.4
+        prioritized_replay_beta_annealing_timesteps: 1000000
+        prioritized_replay_eps: 1e-6
+        n_step: 3
+        gpu: True
+        model:
+          grayscale: True
+          #zero_mean: False
+          # dim: 42
+        num_workers: 1
+        
