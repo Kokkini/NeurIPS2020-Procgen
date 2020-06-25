@@ -9,7 +9,7 @@ parser.add_argument(
     type=int)
 parser.add_argument(
     "--logdir",
-    default="log",
+    default="./log",
     type=str)
 parser.add_argument(
     "--config",
