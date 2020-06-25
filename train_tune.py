@@ -213,6 +213,22 @@ def create_parser(parser_creator=None):
         "--num-envs-per-worker",
         default=None,
         type=int)
+    parser.add_argument(
+        "--target-network-update-freq",
+        default=None,
+        type=int)
+    parser.add_argument(
+        "--buffer-size",
+        default=None,
+        type=int)
+    parser.add_argument(
+        "--n-step",
+        default=None,
+        type=int)
+    parser.add_argument(
+        "--num-atoms",
+        default=None,
+        type=int)
     return parser
 
 
