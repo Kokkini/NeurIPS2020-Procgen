@@ -197,6 +197,18 @@ def create_parser(parser_creator=None):
         "--num-cpus-per-worker",
         default=None,
         type=float)
+    parser.add_argument(
+        "--num-gpus-per-worker",
+        default=None,
+        type=float)
+    parser.add_argument(
+        "--num-gpus",
+        default=None,
+        type=float)
+    parser.add_argument(
+        "--num-envs-per-worker",
+        default=None,
+        type=int)
     return parser
 
 
