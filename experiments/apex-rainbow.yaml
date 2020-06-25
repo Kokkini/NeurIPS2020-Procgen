@@ -27,12 +27,14 @@ apex:
             distribution_mode: easy
         
         use_pytorch: False
-        double_q: True
+        double_q: False
         dueling: True
         num_atoms: 51
+        v_min: -5
+        v_max: 5
         noisy: True
         n_step: 3
-        lr: 6.25e-5
+        lr: 6.25e-4
         adam_epsilon: .00015
         hiddens: [512]
         buffer_size: 1000000
@@ -49,6 +51,9 @@ apex:
         prioritized_replay_alpha: 0.5
         final_prioritized_replay_beta: 1.0
         prioritized_replay_beta_annealing_timesteps: 2000000
+
+        grad_clip: 40
+        clip_rewards: True
 
         num_cpus_per_worker: 1
         num_gpus_per_worker: 0.1
