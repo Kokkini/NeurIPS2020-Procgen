@@ -177,11 +177,30 @@ def create_parser(parser_creator=None):
         "--exploration-config",
         default=None,
         type=str)
+    parser.add_argument(
+        "--double-q",
+        default=None,
+        type=str)
+    parser.add_argument(
+        "--dueling",
+        default=None,
+        type=str)
+    parser.add_argument(
+        "--noisy",
+        default=None,
+        type=str)
+    parser.add_argument(
+        "--grayscale",
+        default=None,
+        type=str)
     return parser
 
 
 def run(args, parser):
     args_dict = vars(args)
+    for key in args_dict:
+        if args_dict[key] in ["True", "False"]:
+            args_dict[key] = args_dict[key]=="True"
     if args.config_file:
         with open(args.config_file) as f:
             experiments = yaml.safe_load(f)
@@ -191,6 +210,8 @@ def run(args, parser):
                     exp["stop"]["timesteps_total"] = args_dict["timesteps_total"]
                 if args_dict["exploration_config"] is not None:
                     exp["config"]["exploration_config"]["type"] = args_dict["exploration_config"]
+                if args_dict["grayscale"] is not None:
+                    exp["config"]["model"]["grayscale"] = args_dict["grayscale"]
                 for a in args_dict:
                     if a in exp["config"] and args_dict[a] is not None: exp["config"][a] = args_dict[a]
     else:

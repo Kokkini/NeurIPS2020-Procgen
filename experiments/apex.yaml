@@ -30,7 +30,7 @@ apex:
         double_q: False
         dueling: False
         num_atoms: 1
-        noisy: True
+        noisy: False
         n_step: 3
         lr: .0005
         adam_epsilon: .00015
@@ -67,3 +67,4 @@ apex:
         
         model:
           conv_filters: [[32, [8, 8], 4], [64, [4, 4], 2], [128, [8, 8], 1]]
+          grayscale: False
