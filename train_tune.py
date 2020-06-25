@@ -193,6 +193,10 @@ def create_parser(parser_creator=None):
         "--grayscale",
         default=None,
         type=str)
+    parser.add_argument(
+        "--num-cpus-per-worker",
+        default=None,
+        type=float)
     return parser
 
 
