@@ -27,7 +27,7 @@ apex:
             distribution_mode: easy
         
         use_pytorch: False
-        double_q: False
+        double_q: True
         dueling: True
         num_atoms: 1
         noisy: False
