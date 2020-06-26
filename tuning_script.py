@@ -21,7 +21,6 @@ os.makedirs(args.logdir, exist_ok=True)
 # exploration_modes = ["ParameterNoise", "PerWorkerEpsilonGreedy", "EpsilonGreedy", "SoftQ", "Exploration", "Random"]
 with open("tune.sh", "w") as f:
     f.write("#!/bin/bash\n")
-    f.write("export CUDA_VISIBLE_DEVICES=1\n")
     for i in range(args.num_exp):
         d = {}
         d["lr"] = np.exp(np.random.uniform(np.log(1e-5), np.log(1e-3)))
@@ -35,7 +34,7 @@ with open("tune.sh", "w") as f:
         # d["num-sgd-iter"] = np.round(np.exp(np.random.uniform(np.log(1), np.log(9)))).astype(np.int)
         # d["exploration-config"] = exploration_modes[i]
         d["timesteps-total"] = 8000000
-        command = 'python train_tune.py -f ${EXPERIMENT:-"' + args.config + '"} --ray-memory ${RAY_MEMORY_LIMIT:-1500000000} --ray-num-cpus ${RAY_CPUS:-2} --ray-object-store-memory ${RAY_STORE_MEMORY:-1000000000}'
+        command = 'CUDA_VISIBLE_DEVICES=1 python train_tune.py -f ${EXPERIMENT:-"' + args.config + '"} --ray-memory ${RAY_MEMORY_LIMIT:-1500000000} --ray-num-cpus ${RAY_CPUS:-2} --ray-object-store-memory ${RAY_STORE_MEMORY:-1000000000}'
         for key in d:
             command += f" --{key} {d[key]}"
         logfile = os.path.join(args.logdir, f"exp_{i:03}.txt")
