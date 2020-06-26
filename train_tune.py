@@ -218,10 +218,6 @@ def create_parser(parser_creator=None):
         default=None,
         type=int)
     parser.add_argument(
-        "--buffer-size",
-        default=None,
-        type=int)
-    parser.add_argument(
         "--n-step",
         default=None,
         type=int)
