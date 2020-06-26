@@ -29,6 +29,17 @@ def conv_sequence(x, depth, prefix):
     return x
 
 
+def random_crop(obs, is_training, crop_shape, original_shape):
+    if is_training:
+        return tf.map_fn(lambda image: tf.image.random_crop(image, crop_shape), obs)
+    else:
+        y1 = (original_shape[0] - crop_shape[0]) // 2
+        x1 = (original_shape[1] - crop_shape[1]) // 2
+        h = crop_shape[0]
+        w = crop_shape[1]
+        return tf.image.crop_to_bounding_box(obs, y1, x1, h, w)
+
+
 class MyVisionNetwork(TFModelV2):
     """
     Network from IMPALA paper implemented in ModelV2 API.
@@ -41,11 +52,16 @@ class MyVisionNetwork(TFModelV2):
         super().__init__(obs_space, action_space, num_outputs, model_config, name)
 
         depths = [16, 32, 32]
-        self.crop_shape = [50,50,3]
+        crop_frac = 58 / 64
+        self.original_shape = obs_space.shape
+        print(self.original_shape)
+        self.crop_shape = [int(crop_frac * obs_space.shape[0]), int(crop_frac * obs_space.shape[1]), 3]
+        print(self.crop_shape)
         self.pad_shape = [74, 74, 3]
+
         # inputs = tf.keras.layers.Input(shape=obs_space.shape, name="observations")
-        # inputs = tf.keras.layers.Input(shape=self.crop_shape, name="observations")
-        inputs = tf.keras.layers.Input(shape=self.pad_shape, name="observations")
+        inputs = tf.keras.layers.Input(shape=self.crop_shape, name="observations")
+        # inputs = tf.keras.layers.Input(shape=self.pad_shape, name="observations")
         scaled_inputs = tf.cast(inputs, tf.float32) / 255.0
 
         x = scaled_inputs
@@ -62,20 +78,32 @@ class MyVisionNetwork(TFModelV2):
 
     def forward(self, input_dict, state, seq_lens):
         # explicit cast to float32 needed in eager
-        print(input_dict,flush=True)
+        print(input_dict, flush=True)
         # exit()
         obs = tf.cast(input_dict["obs"], tf.float32)
+        if "is_training" in input_dict:
+            is_training = input_dict["is_training"]
+            if isinstance(is_training, tf.Tensor):
+                obs = tf.cond(is_training, lambda: random_crop(obs, True, self.crop_shape, self.original_shape),
+                              lambda: random_crop(obs, False, self.crop_shape, self.original_shape))
+            elif is_training:
+                obs = random_crop(obs, True, self.crop_shape, self.original_shape)
+            else:
+                obs = random_crop(obs, False, self.crop_shape, self.original_shape)
+        else:
+            obs = random_crop(obs, False, self.crop_shape, self.original_shape)
+
         # # random crop
         # obs = tf.map_fn(lambda image: tf.image.random_crop(image, self.crop_shape), obs)
         # random padding
-        obs = tf.map_fn(lambda image: tf.image.pad_to_bounding_box(image,
-                                                                   tf.random.uniform(shape=[], minval=0,
-                                                                                     maxval=self.pad_shape[0] - 64,
-                                                                                     dtype=tf.int64),
-                                                                   tf.random.uniform(shape=[], minval=0,
-                                                                                     maxval=self.pad_shape[1] - 64,
-                                                                                     dtype=tf.int64),
-                                                                   self.pad_shape[0], self.pad_shape[1]), obs)
+        # obs = tf.map_fn(lambda image: tf.image.pad_to_bounding_box(image,
+        #                                                            tf.random.uniform(shape=[], minval=0,
+        #                                                                              maxval=self.pad_shape[0] - 64,
+        #                                                                              dtype=tf.int64),
+        #                                                            tf.random.uniform(shape=[], minval=0,
+        #                                                                              maxval=self.pad_shape[1] - 64,
+        #                                                                              dtype=tf.int64),
+        #                                                            self.pad_shape[0], self.pad_shape[1]), obs)
         logits, self._value = self.base_model(obs)
         return logits, state
 
