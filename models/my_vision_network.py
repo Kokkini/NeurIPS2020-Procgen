@@ -62,7 +62,7 @@ class MyVisionNetwork(TFModelV2):
 
     def forward(self, input_dict, state, seq_lens):
         # explicit cast to float32 needed in eager
-        # print(input_dict,flush=True)
+        print(input_dict,flush=True)
         # exit()
         obs = tf.cast(input_dict["obs"], tf.float32)
         # # random crop
