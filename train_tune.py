@@ -225,6 +225,10 @@ def create_parser(parser_creator=None):
         "--num-atoms",
         default=None,
         type=int)
+    parser.add_argument(
+        "--train-batch-size",
+        default=None,
+        type=int)
     return parser
 
 
