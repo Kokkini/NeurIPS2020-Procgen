@@ -333,7 +333,7 @@ def run(args, parser):
     from hyperopt.pyll.base import scope
     import importlib
 
-    tuning_module = importlib.import_module(f"tuning.{args.tunning_file}")
+    tuning_module = importlib.import_module(f"tuning.{args.tuning_file}")
     algo = tuning_module.algo
 
     for exp in experiments.values():
