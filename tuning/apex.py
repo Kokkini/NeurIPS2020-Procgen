@@ -1,6 +1,7 @@
 from hyperopt import hp
 from ray.tune.suggest.hyperopt import HyperOptSearch
 from hyperopt.pyll.base import scope
+import numpy as np
 
 space = {
         "lr": hp.loguniform("lr", np.log(1e-5), np.log(1e-3)),
