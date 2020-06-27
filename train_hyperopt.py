@@ -335,18 +335,20 @@ def run(args, parser):
 		"vf_loss_coeff": hp.loguniform("vf_loss_coeff", np.log(0.1), np.log(2.5)),
 		"num_sgd_iter": scope.int(hp.quniform("num_sgd_iter", 2, 6, 1))
     }
-	current_best_params = [
+    current_best_params = [
         {
             "lr": 0.0006,
             "vf_clip_param": 0.1,
             "entropy_coeff": 0.0019,
-			"num_sgd_iter": 2,
-			"vf_loss_coeff": 0.45
+            "num_sgd_iter": 2,
+            "vf_loss_coeff": 0.45
         }
-	]
+    ]
     algo = HyperOptSearch(
         space,
-        n_initial_points=10)
+        n_initial_points=10,
+        points_to_evaluate=current_best_params
+    )
     for exp in experiments.values():
         exp["num_samples"] = args.num_samples
         exp["local_dir"] = args.local_dir
