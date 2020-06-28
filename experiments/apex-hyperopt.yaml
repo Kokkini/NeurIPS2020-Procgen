@@ -37,7 +37,7 @@ apex:
         lr: 6.25e-4
         adam_epsilon: .00015
         hiddens: [512]
-        buffer_size: 1000000
+        buffer_size: 700000
         explore: True
         exploration_config:
           type: "EpsilonGreedy"
