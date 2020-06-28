@@ -1,4 +1,4 @@
-procgen-ppo:
+procgen-ppo-data-aug:
     env: procgen_env_wrapper  # Change this at your own risk :D
     run: PPO
     # Can be replaced by any of the available agents as described at : 
@@ -59,31 +59,31 @@ procgen-ppo:
         # The GAE(lambda) parameter.
         lambda: 0.95
         # The default learning rate.
-        lr: 0.0006109382386874989
+        lr: 0.00045
         # Number of SGD iterations in each outer loop (i.e., number of epochs to
         # execute per train batch).
-        num_sgd_iter: 4
+        num_sgd_iter: 1
         # Total SGD batch size across all devices for SGD. This defines the
         # minibatch size within each epoch.
         sgd_minibatch_size: 2048 # 8 minibatches per epoch
         # Training batch size, if applicable. Should be >= rollout_fragment_length.
         # Samples batches will be concatenated together to a batch of this size,
         # which is then passed to SGD.
-        train_batch_size: 16384 # 256 * 64
+        train_batch_size: 30000
         # Initial coefficient for KL divergence.
         kl_coeff: 0.0
         # Target value for KL divergence.
         kl_target: 0.01
         # Coefficient of the value function loss. IMPORTANT: you must tune this if
         # you set vf_share_layers: True.
-        vf_loss_coeff: 0.5282079997171755
+        vf_loss_coeff: 0.15
         # Coefficient of the entropy regularizer.
-        entropy_coeff: 0.0018357092350230432
+        entropy_coeff: 0.015
         # PPO clip parameter.
         clip_param: 0.2
         # Clip param for the value function. Note that this is sensitive to the
         # scale of the rewards. If your expected V is large, increase this.
-        vf_clip_param: 0.3596127848861489
+        vf_clip_param: 0.15
         # If specified, clip the global norm of gradients by this amount.
         grad_clip: 0.5
         # Which observation filter to apply to the observation.
@@ -226,7 +226,7 @@ procgen-ppo:
         # `rollout_fragment_length` length unrolls. Episode truncation guarantees
         # evenly sized batches, but increases variance as the reward-to-go will
         # need to be estimated at truncation boundaries.
-        batch_mode: complete_episodes
+        batch_mode: truncate_episodes
 
         ################################################
         ################################################
