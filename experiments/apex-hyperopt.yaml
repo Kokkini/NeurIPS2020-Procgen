@@ -25,36 +25,51 @@ apex:
             use_sequential_levels: False
             # What variant of the levels to use, the options are "easy", "hard", "extreme", "memory", "exploration". All games support "easy" and "hard", while other options are game-specific. The default is "hard". Switching to "easy" will reduce the number of timesteps required to solve each game and is useful for testing or when working with limited compute resources. NOTE : During the evaluation phase (rollout), this will always be overriden to "easy"
             distribution_mode: easy
-        # Works for both torch and tf.
-        framework: tf
-        gamma: 0.99
-        double_q: false
-        dueling: false
-        num_atoms: 1
-        noisy: false
+        
+        use_pytorch: False
+        double_q: False
+        dueling: True
+        num_atoms: 51
+        v_min: -5
+        v_max: 5
+        noisy: True
         n_step: 3
-        lr: .0001
+        lr: 6.25e-4
         adam_epsilon: .00015
         hiddens: [512]
         buffer_size: 1000000
+        explore: True
         exploration_config:
-          final_epsilon: 0.01
+          type: "EpsilonGreedy"
+          initial_epsilon: 0
+          final_epsilon: 0
           epsilon_timesteps: 200000
+        
+        evaluation_config:
+          explore: False
+          
         prioritized_replay_alpha: 0.5
         final_prioritized_replay_beta: 1.0
         prioritized_replay_beta_annealing_timesteps: 2000000
 
-        num_gpus: 1
+        grad_clip: 40
+        clip_rewards: True
+
+        num_cpus_per_worker: 1
+        num_gpus_per_worker: 0.1
+        num_cpus_for_driver: 1
+        num_gpus: 0.3
 
         # APEX
-        num_workers: 8
+        num_workers: 6
         num_envs_per_worker: 8
         rollout_fragment_length: 20
-        train_batch_size: 512
-        target_network_update_freq: 50000
+        train_batch_size: 1024
+        target_network_update_freq: 32000
         timesteps_per_iteration: 25000
         
         preprocessor_pref: deepmind
         
         model:
-          conv_filters: [[16, [4, 4], 2], [32, [4, 4], 2], [512, [16, 16], 1]]
+          conv_filters: [[32, [8, 8], 4], [64, [4, 4], 2], [128, [8, 8], 1]]
+          grayscale: True
