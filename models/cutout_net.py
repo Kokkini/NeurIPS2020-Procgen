@@ -40,7 +40,9 @@ def random_crop(obs, is_training, crop_shape, original_shape):
         return tf.image.crop_to_bounding_box(obs, y1, x1, h, w)
 
 
-class MyVisionNetwork(TFModelV2):
+
+
+class CutoutNet(TFModelV2):
     """
     Network from IMPALA paper implemented in ModelV2 API.
 
@@ -59,9 +61,12 @@ class MyVisionNetwork(TFModelV2):
         print(self.crop_shape)
         self.pad_shape = [74, 74, 3]
 
-        # inputs = tf.keras.layers.Input(shape=obs_space.shape, name="observations")
-        inputs = tf.keras.layers.Input(shape=self.crop_shape, name="observations")
-        # inputs = tf.keras.layers.Input(shape=self.pad_shape, name="observations")
+        self.cutout_min = 7
+        self.cutout_max = 22
+        self.cutout_chance = 0.8
+
+        inputs = tf.keras.layers.Input(shape=obs_space.shape, name="observations")
+
         scaled_inputs = tf.cast(inputs, tf.float32) / 255.0
 
         x = scaled_inputs
@@ -84,33 +89,36 @@ class MyVisionNetwork(TFModelV2):
         if "is_training" in input_dict:
             is_training = input_dict["is_training"]
             if isinstance(is_training, tf.Tensor):
-                obs = tf.cond(is_training, lambda: random_crop(obs, True, self.crop_shape, self.original_shape),
-                              lambda: random_crop(obs, False, self.crop_shape, self.original_shape))
+                obs = tf.cond(is_training, lambda: self.cutout_color(obs, True),
+                              lambda: self.cutout_color(obs, False))
             elif is_training:
-                obs = random_crop(obs, True, self.crop_shape, self.original_shape)
-            else:
-                obs = random_crop(obs, False, self.crop_shape, self.original_shape)
-        else:
-            obs = random_crop(obs, False, self.crop_shape, self.original_shape)
-
-        # # random crop
-        # obs = tf.map_fn(lambda image: tf.image.random_crop(image, self.crop_shape), obs)
-        # random padding
-        # obs = tf.map_fn(lambda image: tf.image.pad_to_bounding_box(image,
-        #                                                            tf.random.uniform(shape=[], minval=0,
-        #                                                                              maxval=self.pad_shape[0] - 64,
-        #                                                                              dtype=tf.int64),
-        #                                                            tf.random.uniform(shape=[], minval=0,
-        #                                                                              maxval=self.pad_shape[1] - 64,
-        #                                                                              dtype=tf.int64),
-        #                                                            self.pad_shape[0], self.pad_shape[1]), obs)
-
+                obs = self.cutout_color(obs, True)
         logits, self._value = self.base_model(obs)
         return logits, state
 
     def value_function(self):
         return tf.reshape(self._value, [-1])
 
+    def random_cutout_color_one_image(self, img):
+        p = tf.random.uniform([], minval=0, maxval=1)
+        y = tf.random.uniform([], maxval=self.original_shape[0]-1, dtype=tf.int64)
+        x = tf.random.uniform([], maxval=self.original_shape[1]-1, dtype=tf.int64)
+        h = tf.random.uniform([], minval=self.cutout_min, maxval=self.cutout_max, dtype=tf.int64)
+        w = tf.random.uniform([], minval=self.cutout_min, maxval=self.cutout_max, dtype=tf.int64)
+        h = tf.minimum(h, self.original_shape[0])
+        w = tf.minimum(w, self.original_shape[1])
+        augmented = img.copy()
+        augmented[y:y + h, x:x + w] = tf.random.uniform([h, w, 3], minval=0, maxval=255, dtype=tf.float32)
+        res = tf.cond(p < self.cutout_chance, lambda: augmented, lambda: img)
+        return res
+
+    def cutout_color(self, obs, is_training):
+        if is_training:
+            return tf.map_fn(lambda image: self.random_cutout_color_one_image(image), obs)
+        else:
+            return obs
+
+
 
 # Register model in ModelCatalog
-ModelCatalog.register_custom_model("my_vision_network", MyVisionNetwork)
+ModelCatalog.register_custom_model("cutout_net", CutoutNet)
