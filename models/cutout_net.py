@@ -63,7 +63,7 @@ class CutoutNet(TFModelV2):
         self.pad_shape = [74, 74, 3]
 
         self.cutout_min = 7
-        self.cutout_max = 22
+        self.cutout_max = 15
         self.cutout_chance = 0.8
 
         inputs = tf.keras.layers.Input(shape=obs_space.shape, name="observations")
