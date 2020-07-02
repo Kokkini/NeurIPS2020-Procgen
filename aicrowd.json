@@ -3,6 +3,6 @@
     "grader_id": "evaluations-api-neurips-2020-procgen",
     "authors" : ["Quang Tran <trannhatquang1104@gmail.com>"],
     "description": "Procgen test submission",
-    "docker_build": true,
+    "docker_build": false,
     "debug" : false
 }
