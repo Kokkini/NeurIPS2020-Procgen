@@ -108,7 +108,7 @@ class CutoutNet(TFModelV2):
         # w = tf.random.uniform([], minval=self.cutout_min, maxval=self.cutout_max, dtype=tf.int64)
         # h = tf.minimum(h, self.original_shape[0])
         # w = tf.minimum(w, self.original_shape[1])
-        mask_size = tf.random.uniform([2], minval=self.cutout_min, maxval=self.cutout_max, dtype=tf.int64)
+        mask_size = tf.random.uniform([2], minval=self.cutout_min, maxval=self.cutout_max, dtype=tf.int32)
         # augmented = img.copy()
         # augmented[y:y + h, x:x + w] = tf.random.uniform([h, w, 3], minval=0, maxval=255, dtype=tf.float32)
 
