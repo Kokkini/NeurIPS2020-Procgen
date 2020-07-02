@@ -102,14 +102,23 @@ class CutoutNet(TFModelV2):
 
     def random_cutout_color_one_image(self, img):
         p = tf.random.uniform([], minval=0, maxval=1)
-        y = tf.random.uniform([], maxval=self.original_shape[0]-1, dtype=tf.int64)
-        x = tf.random.uniform([], maxval=self.original_shape[1]-1, dtype=tf.int64)
-        h = tf.random.uniform([], minval=self.cutout_min, maxval=self.cutout_max, dtype=tf.int64)
-        w = tf.random.uniform([], minval=self.cutout_min, maxval=self.cutout_max, dtype=tf.int64)
-        h = tf.minimum(h, self.original_shape[0])
-        w = tf.minimum(w, self.original_shape[1])
-        augmented = img.copy()
-        augmented[y:y + h, x:x + w] = tf.random.uniform([h, w, 3], minval=0, maxval=255, dtype=tf.float32)
+        # y = tf.random.uniform([], maxval=self.original_shape[0]-1, dtype=tf.int64)
+        # x = tf.random.uniform([], maxval=self.original_shape[1]-1, dtype=tf.int64)
+        # h = tf.random.uniform([], minval=self.cutout_min, maxval=self.cutout_max, dtype=tf.int64)
+        # w = tf.random.uniform([], minval=self.cutout_min, maxval=self.cutout_max, dtype=tf.int64)
+        # h = tf.minimum(h, self.original_shape[0])
+        # w = tf.minimum(w, self.original_shape[1])
+        mask_size = tf.random.uniform([2], minval=self.cutout_min, maxval=self.cutout_max, dtype=tf.int64)
+        # augmented = img.copy()
+        # augmented[y:y + h, x:x + w] = tf.random.uniform([h, w, 3], minval=0, maxval=255, dtype=tf.float32)
+
+        augmented = tfa.image.random_cutout(
+            img,
+            mask_size= mask_size,
+            constant_values=tf.random.uniform([3], minval=0, maxval=255.0, dtype=tf.float32),
+            seed=None,
+            data_format='channels_last'
+        )
         res = tf.cond(p < self.cutout_chance, lambda: augmented, lambda: img)
         return res
 
