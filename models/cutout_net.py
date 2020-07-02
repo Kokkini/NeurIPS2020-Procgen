@@ -109,16 +109,23 @@ class CutoutNet(TFModelV2):
         # h = tf.minimum(h, self.original_shape[0])
         # w = tf.minimum(w, self.original_shape[1])
         mask_size = tf.random.uniform([2], minval=self.cutout_min, maxval=self.cutout_max, dtype=tf.int32)
+        offset_y = tf.random.uniform([], minval=0, maxval=self.original_shape[0], dtype=tf.int32)
+        offset_x = tf.random.uniform([], minval=0, maxval=self.original_shape[1], dtype=tf.int32)
+        color = tf.random.uniform([3], minval=0, maxval=255.0, dtype=tf.float32)
         # augmented = img.copy()
         # augmented[y:y + h, x:x + w] = tf.random.uniform([h, w, 3], minval=0, maxval=255, dtype=tf.float32)
 
-        augmented = tfa.image.random_cutout(
-            img,
-            mask_size= mask_size,
-            constant_values=tf.random.uniform([3], minval=0, maxval=255.0, dtype=tf.float32),
-            seed=None,
-            data_format='channels_last'
-        )
+        # augmented = tfa.image.random_cutout(
+        #     img,
+        #     mask_size= mask_size,
+        #     constant_values=tf.random.uniform([3], minval=0, maxval=255.0, dtype=tf.float32),
+        #     seed=None,
+        #     data_format='channels_last'
+        # )
+
+        augmented = self.cutout(img, mask_size, [offset_y, offset_x], color)
+
+
         res = tf.cond(p < self.cutout_chance, lambda: augmented, lambda: img)
         return res
 
@@ -127,6 +134,42 @@ class CutoutNet(TFModelV2):
             return tf.map_fn(lambda image: self.random_cutout_color_one_image(image), obs)
         else:
             return obs
+
+    def cutout(self, image, mask_size, offset=(0, 0), constant_values=0):
+        with tf.name_scope("cutout"):
+            origin_shape = image.shape
+            image_height = origin_shape[0]
+            image_width = origin_shape[1]
+            offset = tf.convert_to_tensor(offset)
+            mask_size = tf.convert_to_tensor(mask_size)
+
+            mask_size = mask_size // 2
+            cutout_center_heights = offset[0]
+            cutout_center_widths = offset[1]
+
+            lower_pads = tf.maximum(0, cutout_center_heights - mask_size[0])
+            upper_pads = tf.maximum(0, image_height - cutout_center_heights - mask_size[0])
+            left_pads = tf.maximum(0, cutout_center_widths - mask_size[1])
+            right_pads = tf.maximum(0, image_width - cutout_center_widths - mask_size[1])
+
+            cutout_shape = [image_height - (lower_pads + upper_pads), image_width - (left_pads + right_pads)]
+
+            padding_dims = [[lower_pads, upper_pads], [left_pads, right_pads]]
+            mask = tf.pad(
+                tf.zeros(cutout_shape, dtype=image.dtype),
+                padding_dims,
+                constant_values=1,
+            )
+
+            mask = tf.tile(tf.expand_dims(mask, -1), [1, 1, tf.shape(image)[-1]])
+
+            result = tf.where(
+                mask == 0,
+                tf.ones_like(image, dtype=image.dtype) * constant_values,
+                image,
+            )
+            result.set_shape(origin_shape)
+            return result
 
 
 
