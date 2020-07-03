@@ -10,19 +10,24 @@ def conv_layer(depth, name):
         filters=depth, kernel_size=3, strides=1, padding="same", name=name
     )
 
+def layer_norm():
+    return tf.keras.layers.LayerNormalization(axis=1 , center=True , scale=True)
 
 def residual_block(x, depth, prefix):
     inputs = x
     assert inputs.get_shape()[-1].value == depth
     x = tf.keras.layers.ReLU()(x)
     x = conv_layer(depth, name=prefix + "_conv0")(x)
+    x = layer_norm()(x)
     x = tf.keras.layers.ReLU()(x)
     x = conv_layer(depth, name=prefix + "_conv1")(x)
+    x = layer_norm()(x)
     return x + inputs
 
 
 def conv_sequence(x, depth, prefix):
     x = conv_layer(depth, prefix + "_conv")(x)
+    x = layer_norm()(x)
     x = tf.keras.layers.MaxPool2D(pool_size=3, strides=2, padding="same")(x)
     x = residual_block(x, depth, prefix=prefix + "_block0")
     x = residual_block(x, depth, prefix=prefix + "_block1")
@@ -52,6 +57,7 @@ class ImpalaLayerNorm(TFModelV2):
         x = tf.keras.layers.Flatten()(x)
         x = tf.keras.layers.ReLU()(x)
         x = tf.keras.layers.Dense(units=256, activation="relu", name="hidden")(x)
+        x = layer_norm()(x)
         logits = tf.keras.layers.Dense(units=num_outputs, name="pi")(x)
         value = tf.keras.layers.Dense(units=1, name="vf")(x)
         self.base_model = tf.keras.Model(inputs, [logits, value])
