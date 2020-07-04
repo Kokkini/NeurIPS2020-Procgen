@@ -290,7 +290,7 @@ def run(args, parser):
         args.env = config.get("env")
 
     ray.init()
-
+    config["explore"] = False
     # Create the Trainer from config.
     cls = get_trainable_cls(args.run)
     agent = cls(env=args.env, config=config)
