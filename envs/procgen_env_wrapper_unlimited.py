@@ -5,7 +5,7 @@ import numpy as np
 from ray.tune import registry
 from procgen.env import ENV_NAMES as VALID_ENV_NAMES
 
-class ProcgenEnvWrapperFewEnv(gym.Env):
+class ProcgenEnvWrapperUnlimited(gym.Env):
     """
     Procgen Wrapper file
     """
@@ -65,6 +65,6 @@ class ProcgenEnvWrapperFewEnv(gym.Env):
 
 # Register Env in Ray
 registry.register_env(
-    "procgen_env_wrapper_few_env",
-    lambda config: ProcgenEnvWrapperFewEnv(config)
+    "procgen_env_wrapper_unlimited",
+    lambda config: ProcgenEnvWrapperUnlimited(config)
 )
