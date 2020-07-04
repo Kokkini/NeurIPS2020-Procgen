@@ -5,6 +5,7 @@ from ray.rllib.models.preprocessors import Preprocessor
 
 class MyPreprocessorClass(Preprocessor):
     """Custom preprocessing for observations
+
     Adopted from https://docs.ray.io/en/master/rllib-models.html#custom-preprocessors
     """
 
