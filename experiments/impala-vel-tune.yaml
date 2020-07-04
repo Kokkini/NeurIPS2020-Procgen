@@ -273,9 +273,8 @@ procgen-ppo:
             type: "StochasticSampling"
             # Can add constructor kwargs here (if any)
         
-        evaluation_interval: 100000
+        evaluation_interval: 1
         evaluation_num_episodes: 10
-        in_evaluation: False
         
         evaluation_config:
             explore: False
