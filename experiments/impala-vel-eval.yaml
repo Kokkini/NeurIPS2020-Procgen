@@ -262,7 +262,7 @@ procgen-ppo:
         # Default exploration behavior, iff `explore`=None is passed into
         # compute_action(s).
         # Set to False for no exploration behavior (e.g., for evaluation).
-        explore: True,
+        explore: True
         # Provide a dict specifying the Exploration object's config.
         exploration_config:
             # The Exploration class to use. In the simplest case, this is the name
@@ -272,6 +272,9 @@ procgen-ppo:
             # EpsilonGreedy)
             type: "StochasticSampling"
             # Can add constructor kwargs here (if any)
+        
+        evaluation_config:
+            explore: False
 
         ################################################
         ################################################
