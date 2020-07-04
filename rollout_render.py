@@ -291,6 +291,7 @@ def run(args, parser):
 
     ray.init()
 
+    config["env_config"]["render_mode"] = "rgb_array"
     # Create the Trainer from config.
     cls = get_trainable_cls(args.run)
     agent = cls(env=args.env, config=config)
