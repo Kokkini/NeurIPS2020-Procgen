@@ -1,4 +1,4 @@
-procgen-ppo-data-aug:
+procgen-ppo:
     env: procgen_env_wrapper  # Change this at your own risk :D
     run: PPO
     # Can be replaced by any of the available agents as described at : 
@@ -28,7 +28,7 @@ procgen-ppo-data-aug:
     config:
         ################################################
         ################################################
-        # === Settings for the Procgen Environment === #
+        # === Settings for the Procgen Environment ===
         ################################################
         ################################################
         env_config:
@@ -39,7 +39,7 @@ procgen-ppo-data-aug:
             # The lowest seed that will be used to generated levels. 'start_level' and 'num_levels' fully specify the set of possible levels
             start_level: 0
             # Paint player velocity info in the top left corner. Only supported by certain games.
-            paint_vel_info: False
+            paint_vel_info: True
             # Use randomly generated assets in place of human designed assets
             use_generated_assets: False
             # center_agent : Determines whether observations are centered on the agent or display the full level. Override at your own risk.
@@ -59,31 +59,31 @@ procgen-ppo-data-aug:
         # The GAE(lambda) parameter.
         lambda: 0.95
         # The default learning rate.
-        lr: 0.00045
+        lr: 0.000504169
         # Number of SGD iterations in each outer loop (i.e., number of epochs to
         # execute per train batch).
-        num_sgd_iter: 2
+        num_sgd_iter: 5
         # Total SGD batch size across all devices for SGD. This defines the
         # minibatch size within each epoch.
-        sgd_minibatch_size: 2048 # 8 minibatches per epoch
+        sgd_minibatch_size: 2048
         # Training batch size, if applicable. Should be >= rollout_fragment_length.
         # Samples batches will be concatenated together to a batch of this size,
         # which is then passed to SGD.
-        train_batch_size: 30000
+        train_batch_size: 16384
         # Initial coefficient for KL divergence.
         kl_coeff: 0.0
         # Target value for KL divergence.
         kl_target: 0.01
         # Coefficient of the value function loss. IMPORTANT: you must tune this if
         # you set vf_share_layers: True.
-        vf_loss_coeff: 0.15
+        vf_loss_coeff: 0.49956
         # Coefficient of the entropy regularizer.
-        entropy_coeff: 0.015
+        entropy_coeff: 0.00704623
         # PPO clip parameter.
         clip_param: 0.2
         # Clip param for the value function. Note that this is sensitive to the
         # scale of the rewards. If your expected V is large, increase this.
-        vf_clip_param: 0.15
+        vf_clip_param: 0.0782811
         # If specified, clip the global norm of gradients by this amount.
         grad_clip: 0.5
         # Which observation filter to apply to the observation.
@@ -187,7 +187,7 @@ procgen-ppo-data-aug:
             # Examples of implementing the model in Keras is also available
             # here :
             # https://github.com/ray-project/ray/blob/master/rllib/examples/custom_keras_model.py
-            custom_model: cutout_net
+            custom_model: impala_cnn_tf
             # Extra options to pass to custom class
             custom_options: {}
 
@@ -226,7 +226,7 @@ procgen-ppo-data-aug:
         # `rollout_fragment_length` length unrolls. Episode truncation guarantees
         # evenly sized batches, but increases variance as the reward-to-go will
         # need to be estimated at truncation boundaries.
-        batch_mode: truncate_episodes
+        batch_mode: complete_episodes
 
         ################################################
         ################################################
@@ -262,7 +262,7 @@ procgen-ppo-data-aug:
         # Default exploration behavior, iff `explore`=None is passed into
         # compute_action(s).
         # Set to False for no exploration behavior (e.g., for evaluation).
-        explore: True,
+        explore: True
         # Provide a dict specifying the Exploration object's config.
         exploration_config:
             # The Exploration class to use. In the simplest case, this is the name
@@ -272,6 +272,9 @@ procgen-ppo-data-aug:
             # EpsilonGreedy)
             type: "StochasticSampling"
             # Can add constructor kwargs here (if any)
+        
+        evaluation_config:
+            explore: False
 
         ################################################
         ################################################
