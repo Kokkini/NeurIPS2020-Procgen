@@ -137,7 +137,7 @@ class CustomCallbacks(DefaultCallbacks):
         print(f"result dict: {result}")
         self.ep_rewards = self.ep_rewards + result["hist_stats"]["episode_reward"]
         if len(self.ep_rewards) >= self.num_eval_eps:
-            mean_reward = np.mean(self.ep_rewards[-num_eval_eps:])
+            mean_reward = np.mean(self.ep_rewards[-self.num_eval_eps:])
             print(f"mean reward of last {self.num_eval_eps} eps: {mean_reward}")
             print(f"best so far: {self.best_so_far}")
             if mean_reward > self.best_so_far:
