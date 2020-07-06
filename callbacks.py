@@ -130,4 +130,6 @@ class CustomCallbacks(DefaultCallbacks):
         # print("=============================================================")
         # print(" Timesteps Throughput : {} ts/sec".format(TBD))
         # print("=============================================================")
+        print("end of Trainable.train()")
+        print(f"result dict: {result}")
         pass
