@@ -22,6 +22,9 @@ class CustomCallbacks(DefaultCallbacks):
 
     These callbacks can be used for custom metrics and custom postprocessing.
     """
+    ep_rewards = []
+    num_eval_eps = 1000
+    best_so_far = -float("inf")
 
     def on_episode_start(self, worker: RolloutWorker, base_env: BaseEnv,
                          policies: Dict[str, Policy],
@@ -73,7 +76,7 @@ class CustomCallbacks(DefaultCallbacks):
             kwargs: Forward compatibility placeholder.
         """
         ######################################################################
-        # An example of adding a custom metric from the latest observation 
+        # An example of adding a custom metric from the latest observation
         # from your env
         ######################################################################
         # last_obs_object_from_episode = episode.last_observation_for()
@@ -132,4 +135,11 @@ class CustomCallbacks(DefaultCallbacks):
         # print("=============================================================")
         print("end of Trainable.train()")
         print(f"result dict: {result}")
-        pass
+        self.ep_rewards = self.ep_rewards + result["hist_stats"]["episode_reward"]
+        if len(self.ep_rewards) >= self.num_eval_eps:
+            mean_reward = np.mean(self.ep_rewards[-num_eval_eps:])
+            print(f"mean reward of last {self.num_eval_eps} eps: {mean_reward}")
+            print(f"best so far: {self.best_so_far}")
+            if mean_reward > self.best_so_far:
+                self.best_so_far = mean_reward
+                trainer.save()
