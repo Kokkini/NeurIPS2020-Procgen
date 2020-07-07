@@ -251,6 +251,10 @@ def create_parser(parser_creator=None):
         help="Write progress to a temporary file (updated "
         "after each episode). An output filename must be set using --out; "
         "the progress file will live in the same folder.")
+    parser.add_argument(
+        "--num_levels",
+        default=None,
+        type=int)
     return parser
 
 
@@ -292,6 +296,9 @@ def run(args, parser):
     ray.init()
 
     config["env_config"]["render_mode"] = "rgb_array"
+    args_dict = vars(args)
+    if args_dict["num_levels"] is not None:
+        config["env_config"]["num_levels"] = args_dict["num_levels"]
     # Create the Trainer from config.
     cls = get_trainable_cls(args.run)
     agent = cls(env=args.env, config=config)
