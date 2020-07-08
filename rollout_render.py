@@ -295,7 +295,8 @@ def run(args, parser):
 
     ray.init()
 
-    config["env_config"]["render_mode"] = "rgb_array"
+    if args.video_dir:
+        config["env_config"]["render_mode"] = "rgb_array"
     args_dict = vars(args)
     if args_dict["num_levels"] is not None:
         config["env_config"]["num_levels"] = args_dict["num_levels"]
