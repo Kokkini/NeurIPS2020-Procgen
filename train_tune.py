@@ -14,7 +14,7 @@ from ray.tune.tune import _make_scheduler, run_experiments
 from ray.rllib.utils.framework import try_import_tf, try_import_torch
 
 from utils.loader import load_envs, load_models, load_algorithms
-from callbacks import CustomCallbacks
+from callbacks_save_best import CustomCallbacks
 
 # Try to import both backends for flag checking/warnings.
 tf = try_import_tf()
