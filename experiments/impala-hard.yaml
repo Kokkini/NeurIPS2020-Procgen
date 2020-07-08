@@ -21,7 +21,7 @@ procgen-ppo:
     ################################################
     # === Settings for Checkpoints ===
     ################################################
-    checkpoint_freq: 100
+    checkpoint_freq: 9999999999999
     checkpoint_at_end: True
     keep_checkpoints_num: 5
 
