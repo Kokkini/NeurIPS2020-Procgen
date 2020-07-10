@@ -28,8 +28,8 @@ def conv_sequence(x, depth, prefix):
     x = residual_block(x, depth, prefix=prefix + "_block1")
     return x
 
-def random_noise(obs):
-    noise = tf.random.normal(tf.shape(obs), mean=0.0, stddev=20, dtype=tf.float32)
+def random_noise(obs, std):
+    noise = tf.random.normal(tf.shape(obs), mean=0.0, stddev=std, dtype=tf.float32)
     return obs + noise
 
 
@@ -43,6 +43,9 @@ class NoiseNet(TFModelV2):
 
     def __init__(self, obs_space, action_space, num_outputs, model_config, name):
         super().__init__(obs_space, action_space, num_outputs, model_config, name)
+
+        self.counter = tf.get_variable(0, dtype=tf.float32)
+        self.delta_noise = model_config.get("delta_noise")
 
         depths = [16, 32, 32]
         inputs = tf.keras.layers.Input(shape=obs_space.shape, name="observations")
@@ -68,7 +71,7 @@ class NoiseNet(TFModelV2):
         if "is_training" in input_dict:
             is_training = input_dict["is_training"]
             if isinstance(is_training, tf.Tensor):
-                obs = tf.cond(is_training, lambda: random_noise(obs),
+                obs = tf.cond(is_training, lambda: random_noise(obs, self.counter.assign_add(1)),
                               lambda: obs)
             elif is_training:
                 obs = random_noise(obs)
