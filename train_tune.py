@@ -250,6 +250,8 @@ def run(args, parser):
                     exp["config"]["model"]["grayscale"] = args_dict["grayscale"]
                 for a in args_dict:
                     if a in exp["config"] and args_dict[a] is not None: exp["config"][a] = args_dict[a]
+                num_mini_batch = exp["config"]["num_sgd_iter"] * exp["stop"]["timesteps_total"] / exp["config"]["sgd_minibatch_size"]
+                exp["config"]["model"]["num_mini_batch"] = int(num_mini_batch)
     else:
         # Note: keep this in sync with tune/config_parser.py
         experiments = {
@@ -269,6 +271,7 @@ def run(args, parser):
                 "upload_dir": args.upload_dir,
             }
         }
+
     print(experiments)
     verbose = 1
     for exp in experiments.values():

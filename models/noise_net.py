@@ -44,8 +44,10 @@ class NoiseNet(TFModelV2):
     def __init__(self, obs_space, action_space, num_outputs, model_config, name):
         super().__init__(obs_space, action_space, num_outputs, model_config, name)
 
-        self.counter = tf.get_variable(0, dtype=tf.float32)
-        self.delta_noise = model_config.get("delta_noise")
+        self.noise = tf.Variable(0, dtype=tf.float32)
+        num_mini_batch = model_config.get("num_mini_batch")
+        self.delta_noise = 20 / num_mini_batch
+        print(f"num mini batch: {num_mini_batch}")
 
         depths = [16, 32, 32]
         inputs = tf.keras.layers.Input(shape=obs_space.shape, name="observations")
@@ -71,7 +73,7 @@ class NoiseNet(TFModelV2):
         if "is_training" in input_dict:
             is_training = input_dict["is_training"]
             if isinstance(is_training, tf.Tensor):
-                obs = tf.cond(is_training, lambda: random_noise(obs, self.counter.assign_add(1)),
+                obs = tf.cond(is_training, lambda: random_noise(obs, tf.minimum(20, self.noise.assign_add(self.delta_noise))),
                               lambda: obs)
             elif is_training:
                 obs = random_noise(obs)
