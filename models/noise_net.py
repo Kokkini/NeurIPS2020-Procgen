@@ -44,9 +44,15 @@ class NoiseNet(TFModelV2):
     def __init__(self, obs_space, action_space, num_outputs, model_config, name):
         super().__init__(obs_space, action_space, num_outputs, model_config, name)
 
-        self.noise = tf.Variable(0, dtype=tf.float32)
-        num_mini_batch = model_config.get("num_mini_batch")
-        self.delta_noise = 20 / num_mini_batch
+        self.noise1 = tf.Variable(0, dtype=tf.float32)
+        self.noise2 = tf.Variable(0, dtype=tf.float32)
+        custom_options = model_config.get("custom_options")
+        num_mini_batch = custom_options.get("num_mini_batch")
+        print(model_config)
+        if num_mini_batch is None:
+            self.delta_noise = 0
+        else:
+            self.delta_noise = 20 / num_mini_batch
         print(f"num mini batch: {num_mini_batch}")
 
         depths = [16, 32, 32]
@@ -64,6 +70,7 @@ class NoiseNet(TFModelV2):
         value = tf.keras.layers.Dense(units=1, name="vf")(x)
         self.base_model = tf.keras.Model(inputs, [logits, value])
         self.register_variables(self.base_model.variables)
+        self.register_variables([self.noise1, self.noise2])
 
     def forward(self, input_dict, state, seq_lens):
         # explicit cast to float32 needed in eager
@@ -73,10 +80,10 @@ class NoiseNet(TFModelV2):
         if "is_training" in input_dict:
             is_training = input_dict["is_training"]
             if isinstance(is_training, tf.Tensor):
-                obs = tf.cond(is_training, lambda: random_noise(obs, tf.minimum(20, self.noise.assign_add(self.delta_noise))),
+                obs = tf.cond(is_training, lambda: random_noise(obs, tf.minimum(20.0, self.noise1.assign_add(self.delta_noise))),
                               lambda: obs)
             elif is_training:
-                obs = random_noise(obs)
+                obs = random_noise(obs, tf.minimum(20.0, self.noise2.assign_add(self.delta_noise)))
 
         logits, self._value = self.base_model(obs)
         return logits, state
