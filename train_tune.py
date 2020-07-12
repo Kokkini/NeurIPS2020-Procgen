@@ -252,7 +252,7 @@ def run(args, parser):
                     if a in exp["config"] and args_dict[a] is not None: exp["config"][a] = args_dict[a]
                 try:
                     num_mini_batch = exp["config"]["num_sgd_iter"] * exp["stop"]["timesteps_total"] / exp["config"]["sgd_minibatch_size"]
-                    exp["config"]["model"]["num_mini_batch"] = int(num_mini_batch)
+                    exp["config"]["model"]["custom_options"]["num_mini_batch"] = int(num_mini_batch)
                 except:
                     print("no num_mini_batch passed to model because it's not relevant")
     else:
