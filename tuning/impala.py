@@ -8,7 +8,7 @@ space = {
 		"entropy_coeff": hp.loguniform("entropy_coeff", np.log(1e-3), np.log(1e-1)),
 		"vf_loss_coeff": hp.loguniform("vf_loss_coeff", np.log(0.1), np.log(2.5)),
 		"num_sgd_iter": scope.int(hp.quniform("num_sgd_iter", 2, 6, 1)),
-        "gamma": hp.choice("gamma", [0.99, 0.999]),
+        "gamma": hp.uniform("gamma", 0.99, 0.999),
         "grad_clip": hp.loguniform("grad_clip", np.log(0.1), np.log(100)),
 
     }
