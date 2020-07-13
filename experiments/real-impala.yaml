@@ -1,36 +1,16 @@
 procgen-impala:
     env: procgen_env_wrapper  # Change this at your own risk :D
     run: IMPALA
-    # Can be replaced by any of the available agents as described at : 
-    # https://github.com/ray-project/ray/blob/master/rllib/agents/registry.py#L103
-    # 
-    # Internally, rllib uses the terminology of Trainable, Algorithms, Agents depending
-    # on the context in which it is used. In this repository, we will consistently
-    # use the terminology of "Algorithms" to refer to these Trainables/Agents.
-    # 
-    # This can also be replaced by a custom "algorithm"
-    # For addition of custom algorithms,
-    # Please refer to :
-    # https://github.com/AIcrowd/neurips2020-procgen-starter-kit/blob/master/algorithms/registry.py
-    ################################################
-    # === Stop Conditions ===
-    ################################################
+    
     stop:
         timesteps_total: 8000000
 
-    ################################################
-    # === Settings for Checkpoints ===
-    ################################################
+    
     checkpoint_freq: 100
     checkpoint_at_end: True
     keep_checkpoints_num: 5
 
     config:
-        ################################################
-        ################################################
-        # === Settings for the Procgen Environment ===
-        ################################################
-        ################################################
         env_config:
             # Name of the procgen environment to train on # Note, that this parameter will be overriden during the evaluation by the AIcrowd evaluators.
             env_name: coinrun
@@ -49,23 +29,36 @@ procgen-impala:
             # What variant of the levels to use, the options are "easy", "hard", "extreme", "memory", "exploration". All games support "easy" and "hard", while other options are game-specific. The default is "hard". Switching to "easy" will reduce the number of timesteps required to solve each game and is useful for testing or when working with limited compute resources. NOTE : During the evaluation phase (rollout), this will always be overriden to "easy"
             distribution_mode: easy
             use_backgrounds: False
+        
+        gamma: 0.999
+        lr: 0.000504169
+        num_sgd_iter: 5
+        train_batch_size: 2048
+        grad_clip: 1
+        clip_rewards: null
+        opt_type: adam
+        lr_schedule: null
+        decay: 0.99
+        momentum: 0.0
+        epsilon: 0.1
+        # balancing the three losses
+        vf_loss_coeff: 0.5
+        entropy_coeff: 0.007
+        entropy_coeff_schedule: null
+        
+        model:
+            custom_model: impala_cnn_tf
+            custom_options: {}
             
         # V-trace params (see vtrace_tf/torch.py).
         vtrace: True
         vtrace_clip_rho_threshold: 1.0
         vtrace_clip_pg_rho_threshold: 1.0
-        # System params.
-        #
-        # == Overview of data flow in IMPALA ==
-        # 1. Policy evaluation in parallel across `num_workers` actors produces
-        #    batches of size `rollout_fragment_length * num_envs_per_worker`.
-        # 2. If enabled, the replay buffer stores and produces batches of size
-        #    `rollout_fragment_length * num_envs_per_worker`.
-        # 3. If enabled, the minibatch ring buffer stores and replays batches of
-        #    size `train_batch_size` up to `num_sgd_iter` times per batch.
-        # 4. The learner thread executes data parallel SGD across `num_gpus` GPUs
-        #    on batches of size `train_batch_size`.
+        
         rollout_fragment_length: 50
+        
+        
+        
         
         min_iter_time_s: 10
         # set >1 to load data into GPUs in parallel. Increases GPU memory usage
@@ -94,52 +87,12 @@ procgen-impala:
         # if ingesting >2GB/s of samples, or if the data requires decompression.
         num_aggregation_workers: 0
 
-        # Learning params.
-        # either "adam" or "rmsprop"
-        opt_type: adam
-        lr_schedule: null
-        # rmsprop considered
-        decay: 0.99
-        momentum: 0.0
-        epsilon: 0.1
-        # balancing the three losses
-        vf_loss_coeff: 0.5
-        entropy_coeff: 0.007
-        entropy_coeff_schedule: null
-
-        # Callback for APPO to use to update KL, target network periodically.
-        # The input to the callback is the learner fetches dict.
-        after_train_step: null
-        ################################################
-        ################################################
-        # === Environment Settings ===
-        ################################################
-        ################################################
-        # Discount factor of the MDP.
-        gamma: 0.999
-        # The default learning rate.
-        lr: 0.000504169
-        # Number of SGD iterations in each outer loop (i.e., number of epochs to
-        # execute per train batch).
-        num_sgd_iter: 5
-        # Training batch size, if applicable. Should be >= rollout_fragment_length.
-        # Samples batches will be concatenated together to a batch of this size,
-        # which is then passed to SGD.
-        train_batch_size: 16384
         
         
-        # PPO clip parameter.
-        clip_param: 0.2
-        # Clip param for the value function. Note that this is sensitive to the
-        # scale of the rewards. If your expected V is large, increase this.
-        vf_clip_param: 0.0782811
-        # If specified, clip the global norm of gradients by this amount.
-        grad_clip: 0.5
+        
+        
         # Which observation filter to apply to the observation.
         observation_filter: NoFilter
-        # Share layers for value function. If you set this to True, it's important
-        # to tune vf_loss_coeff.
-        vf_share_layers: True
         # Number of steps after which the episode is forced to terminate. Defaults
         # to `env.spec.max_episode_steps` (if present) for Gym envs.
         horizon: null
@@ -154,9 +107,7 @@ procgen-impala:
 
         # Unsquash actions to the upper and lower bounds of env's action space
         normalize_actions: False
-        # Whether to clip rewards prior to experience postprocessing. Setting to
-        # None means clip for Atari only.
-        clip_rewards: null
+        
         # Whether to np.clip() actions to the action space low/high range spec.
         clip_actions: True
         # Whether to use rllib or deepmind preprocessors by default
@@ -185,33 +136,8 @@ procgen-impala:
         # this to 0 will force rollouts to be done in the trainer actor.
         num_workers: 6
 
-        # Number of environments to evaluate vectorwise per worker. This enables
-        # model inference batching, which can improve performance for inference
-        # bottlenecked workloads.
         num_envs_per_worker: 12
-
-        # Divide episodes into fragments of this many steps each during rollouts.
-        # Sample batches of this size are collected from rollout workers and
-        # combined into a larger batch of `train_batch_size` for learning.
-        #
-        # For example, given rollout_fragment_length=100 and train_batch_size=1000:
-        #   1. RLlib collects 10 fragments of 100 steps each from rollout workers.
-        #   2. These fragments are concatenated and we perform an epoch of SGD.
-        #
-        # When using multiple envs per worker, the fragment size is multiplied by
-        # `num_envs_per_worker`. This is since we are collecting steps from
-        # multiple envs in parallel. For example, if num_envs_per_worker=5, then
-        # rollout workers will return experiences in chunks of 5*100 = 500 steps.
-        #
-        # The dataflow here can vary per algorithm. For example, PPO further
-        # divides the train batch into minibatches for multi-epoch SGD.
-        
-
-        # Whether to rollout "complete_episodes" or "truncate_episodes" to
-        # `rollout_fragment_length` length unrolls. Episode truncation guarantees
-        # evenly sized batches, but increases variance as the reward-to-go will
-        # need to be estimated at truncation boundaries.
-        batch_mode: complete_episodes
+        batch_mode: truncate_episodes
 
         ################################################
         ################################################
@@ -260,6 +186,7 @@ procgen-impala:
         
         evaluation_config:
             explore: False
+
 
         ################################################
         ################################################
