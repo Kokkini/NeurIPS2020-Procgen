@@ -259,6 +259,10 @@ def create_parser(parser_creator=None):
         "--distribution-mode",
         default=None,
         type=str)
+    parser.add_argument(
+        "--exploration",
+        default=None,
+        type=int)
     return parser
 
 
@@ -306,6 +310,9 @@ def run(args, parser):
         config["env_config"]["num_levels"] = args_dict["num_levels"]
     if args_dict["distribution_mode"] is not None:
         config["env_config"]["distribution_mode"] = args_dict["distribution_mode"]
+    if args_dict["exploration"] is not None:
+        config["explore"] = args_dict["exploration"]==1
+
     print(f"config: {config}")
     # Create the Trainer from config.
     cls = get_trainable_cls(args.run)
