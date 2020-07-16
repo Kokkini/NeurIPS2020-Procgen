@@ -32,12 +32,15 @@ def random_noise(obs, std):
     noise = tf.random.normal(tf.shape(obs), mean=0.0, stddev=std, dtype=tf.float32)
     return obs + noise
 
-def random_conv(obs):
-    N, H, W, C = tf.shape(obs)
+def random_conv(obs, obs_shape):
+    '''
+    C: number of channels
+    '''
+    H, W, C = obs_shape
     conv = tf.random.uniform([C, C], maxval=1)
     conv = conv / tf.reduce_sum(conv) * C
     conv = tf.expand_dims(tf.expand_dims(conv, 0), 0)
-    conv = tf.tile(conv, [N, H, 1, 1])
+    conv = tf.tile(conv, [tf.shape(obs)[0], H, 1, 1])
     return obs @ conv
 
 
@@ -54,6 +57,7 @@ class RandConvNet(TFModelV2):
 
         depths = [16, 32, 32]
         inputs = tf.keras.layers.Input(shape=obs_space.shape, name="observations")
+        self.obs_shape = obs_space.shape
         scaled_inputs = tf.cast(inputs, tf.float32) / 255.0
 
         x = scaled_inputs
@@ -76,9 +80,9 @@ class RandConvNet(TFModelV2):
         if "is_training" in input_dict:
             is_training = input_dict["is_training"]
             if isinstance(is_training, tf.Tensor):
-                obs = tf.cond(is_training, lambda: random_conv(obs), lambda: obs)
+                obs = tf.cond(is_training, lambda: random_conv(obs, self.obs_shape), lambda: obs)
             elif is_training:
-                obs = random_conv(obs)
+                obs = random_conv(obs, self.obs_shape)
 
         logits, self._value = self.base_model(obs)
         return logits, state
