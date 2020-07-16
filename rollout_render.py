@@ -255,6 +255,10 @@ def create_parser(parser_creator=None):
         "--num_levels",
         default=None,
         type=int)
+    parser.add_argument(
+        "--distribution-mode",
+        default=None,
+        type=str)
     return parser
 
 
@@ -300,6 +304,9 @@ def run(args, parser):
     args_dict = vars(args)
     if args_dict["num_levels"] is not None:
         config["env_config"]["num_levels"] = args_dict["num_levels"]
+    if args_dict["distribution_mode"] is not None:
+        config["env_config"]["distribution_mode"] = args_dict["distribution_mode"]
+    print(f"config: {config}")
     # Create the Trainer from config.
     cls = get_trainable_cls(args.run)
     agent = cls(env=args.env, config=config)

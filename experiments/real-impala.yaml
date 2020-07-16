@@ -30,10 +30,11 @@ procgen-impala:
             distribution_mode: easy
             use_backgrounds: False
         
-        gamma: 0.991452
-        lr: 0.00008796
-        num_sgd_iter: 4
-        grad_clip: 1.15003
+        gamma: 0.999
+        lr: 0.001
+        num_sgd_iter: 2
+        train_batch_size: 2048
+        grad_clip: 1
         clip_rewards: null
         opt_type: adam
         lr_schedule: null
@@ -55,7 +56,7 @@ procgen-impala:
         vtrace_clip_pg_rho_threshold: 1.0
         
         rollout_fragment_length: 50
-        train_batch_size: 2048
+        
         
         
         
