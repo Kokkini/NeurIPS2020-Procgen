@@ -95,7 +95,7 @@ def create_parser(parser_creator=None):
         type=str,
         help="Name of the subdirectory under `local_dir` to put results in.")
     parser.add_argument(
-        "--local-dir",
+        "--log-dir",
         default=DEFAULT_RESULTS_DIR,
         type=str,
         help="Local dir to save training results to. Defaults to '{}'.".format(
@@ -229,6 +229,10 @@ def create_parser(parser_creator=None):
         "--train-batch-size",
         default=None,
         type=int)
+    parser.add_argument(
+        "--custom-callbacks",
+        default=None,
+        type=int)
     return parser
 
 
@@ -242,6 +246,7 @@ def run(args, parser):
             experiments = yaml.safe_load(f)
             print(experiments)
             for exp in experiments.values():
+                exp["local_dir"] = args.log_dir
                 if args_dict["timesteps_total"] is not None:
                     exp["stop"]["timesteps_total"] = args_dict["timesteps_total"]
                 if args_dict["exploration_config"] is not None:
@@ -263,7 +268,7 @@ def run(args, parser):
                 "checkpoint_freq": args.checkpoint_freq,
                 "keep_checkpoints_num": args.keep_checkpoints_num,
                 "checkpoint_score_attr": args.checkpoint_score_attr,
-                "local_dir": args.local_dir,
+                "local_dir": args.log_dir,
                 "resources_per_trial": (
                     args.resources_per_trial and
                     resources_to_json(args.resources_per_trial)),
@@ -308,7 +313,9 @@ def run(args, parser):
             exp["config"]["eager_tracing"] = True
 
         ### Add Custom Callbacks
-        exp["config"]["callbacks"] = CustomCallbacks
+        if args.custom_callbacks == 1:
+            exp["config"]["callbacks"] = CustomCallbacks
+
 
     if args.ray_num_nodes:
         cluster = Cluster()
