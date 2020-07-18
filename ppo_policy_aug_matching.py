@@ -112,7 +112,7 @@ class PPOLoss:
                                      + aug_loss_coeff * aug_loss)
         self.loss = loss
 
-def random_conv_old(obs, obs_shape):
+def random_conv_1_batch_filter(obs, obs_shape):
     H, W, C = obs_shape
     conv = tf.random.uniform([C, C], maxval=1)
     conv = conv / tf.reduce_sum(conv) * C
@@ -121,7 +121,7 @@ def random_conv_old(obs, obs_shape):
     return obs @ conv
 
 
-def random_conv(obs, obs_shape):
+def random_conv_hue(obs, obs_shape):
     H, W, C = obs_shape
     N = tf.shape(obs)[0]
     conv = tf.random.uniform([N, C, C], maxval=1)
@@ -130,9 +130,22 @@ def random_conv(obs, obs_shape):
     conv = tf.tile(conv, [1, H, 1, 1])
     return obs @ conv
 
+def random_conv(obs, obs_shape):
+    H, W, C = obs_shape
+    N = tf.shape(obs)[0]
+    conv = tf.random.uniform([N, C, C], maxval=1) ** 8
+    conv = conv / tf.reduce_sum(conv, 1, keepdims=True)
+    conv = tf.expand_dims(conv, 1)
+    conv = tf.tile(conv, [1, H, 1, 1])
+    return obs @ conv
+
 def ppo_surrogate_loss(policy, model, dist_class, train_batch):
     print("current obs")
     print(train_batch[SampleBatch.CUR_OBS])
+
+    logits, state = model.from_batch(train_batch)
+    action_dist = dist_class(logits, model)
+
     input_dict = {
         "obs": random_conv(train_batch[SampleBatch.CUR_OBS], (64, 64, 3)),
         "is_training": True,
@@ -140,8 +153,6 @@ def ppo_surrogate_loss(policy, model, dist_class, train_batch):
     logits2, state2 = model.forward(input_dict, None, None)
     action_dist2 = dist_class(logits2, model)
 
-    logits, state = model.from_batch(train_batch)
-    action_dist = dist_class(logits, model)
 
     mask = None
     if state:

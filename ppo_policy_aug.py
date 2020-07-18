@@ -107,11 +107,21 @@ class PPOLoss:
         self.loss = loss
 
 
-def random_conv(obs, obs_shape):
+def random_conv_old(obs, obs_shape):
     H, W, C = obs_shape
     N = tf.shape(obs)[0]
     conv = tf.random.uniform([N, C, C], maxval=1)
     conv = conv / tf.reduce_sum(conv, [1,2], keepdims=True) * C
+    conv = tf.expand_dims(conv, 1)
+    conv = tf.tile(conv, [1, H, 1, 1])
+    return obs @ conv
+
+
+def random_conv(obs, obs_shape):
+    H, W, C = obs_shape
+    N = tf.shape(obs)[0]
+    conv = tf.random.uniform([N, C, C], maxval=1) ** 8
+    conv = conv / tf.reduce_sum(conv, 1, keepdims=True)
     conv = tf.expand_dims(conv, 1)
     conv = tf.tile(conv, [1, H, 1, 1])
     return obs @ conv
