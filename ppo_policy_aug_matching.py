@@ -143,15 +143,17 @@ def ppo_surrogate_loss(policy, model, dist_class, train_batch):
     print("current obs")
     print(train_batch[SampleBatch.CUR_OBS])
 
-    logits, state = model.from_batch(train_batch)
-    action_dist = dist_class(logits, model)
-
     input_dict = {
         "obs": random_conv(train_batch[SampleBatch.CUR_OBS], (64, 64, 3)),
         "is_training": True,
     }
     logits2, state2 = model.forward(input_dict, None, None)
     action_dist2 = dist_class(logits2, model)
+	
+    logits, state = model.from_batch(train_batch)
+    action_dist = dist_class(logits, model)
+
+    
 
 
     mask = None
