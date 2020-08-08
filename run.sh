@@ -5,7 +5,7 @@ set -e
 # Your experiment file for submission   #
 #########################################
 
-export EXPERIMENT_DEFAULT="experiments/real-impala.yaml"
+export EXPERIMENT_DEFAULT="experiments/impala-round1.yaml"
 #export EXPERIMENT_DEFAULT="experiments/impala.yaml"
 #export EXPERIMENT_DEFAULT="experiments/impala-baseline.yaml"
 export EXPERIMENT=${EXPERIMENT:-$EXPERIMENT_DEFAULT}
