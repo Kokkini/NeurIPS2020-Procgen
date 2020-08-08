@@ -21,7 +21,7 @@ procgen-ppo:
     ################################################
     # === Settings for Checkpoints ===
     ################################################
-    checkpoint_freq: 100
+    checkpoint_freq: 25
     checkpoint_at_end: True
     keep_checkpoints_num: 5
 
@@ -30,10 +30,10 @@ procgen-ppo:
         ################################################
         # === Settings for the Procgen Environment ===
         ################################################
-        ################################################
+        ################################################            
         env_config:
             # Name of the procgen environment to train on # Note, that this parameter will be overriden during the evaluation by the AIcrowd evaluators.
-            env_name: coinrun
+            env_name: miner
             # The number of unique levels that can be generated. Set to 0 to use unlimited levels
             num_levels: 0
             # The lowest seed that will be used to generated levels. 'start_level' and 'num_levels' fully specify the set of possible levels
@@ -59,7 +59,7 @@ procgen-ppo:
         # The GAE(lambda) parameter.
         lambda: 0.95
         # The default learning rate.
-        lr: 0.0006109382386874989
+        lr: 0.0006
         # Number of SGD iterations in each outer loop (i.e., number of epochs to
         # execute per train batch).
         num_sgd_iter: 2
@@ -78,12 +78,12 @@ procgen-ppo:
         # you set vf_share_layers: True.
         vf_loss_coeff: 0.5282079997171755
         # Coefficient of the entropy regularizer.
-        entropy_coeff: 0.0018357092350230432
+        entropy_coeff: 0.0018
         # PPO clip parameter.
         clip_param: 0.2
         # Clip param for the value function. Note that this is sensitive to the
         # scale of the rewards. If your expected V is large, increase this.
-        vf_clip_param: 0.3596127848861489
+        vf_clip_param: 0.36
         # If specified, clip the global norm of gradients by this amount.
         grad_clip: 0.5
         # Which observation filter to apply to the observation.
