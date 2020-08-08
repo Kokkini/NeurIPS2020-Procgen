@@ -90,7 +90,7 @@ procgen-ppo:
         # scale of the rewards. If your expected V is large, increase this.
         vf_clip_param: 0.3596127848861489
         # If specified, clip the global norm of gradients by this amount.
-        grad_clip: 0.5
+        grad_clip: 10
         # Which observation filter to apply to the observation.
         observation_filter: NoFilter
         # Share layers for value function. If you set this to True, it's important
@@ -231,7 +231,7 @@ procgen-ppo:
         # `rollout_fragment_length` length unrolls. Episode truncation guarantees
         # evenly sized batches, but increases variance as the reward-to-go will
         # need to be estimated at truncation boundaries.
-        batch_mode: complete_episodes
+        batch_mode: truncate_episodes
 
         ################################################
         ################################################
