@@ -1,3 +1,5 @@
+        
+            
 procgen-ppo:
     env: procgen_env_wrapper  # Change this at your own risk :D
     run: PPO
@@ -21,7 +23,7 @@ procgen-ppo:
     ################################################
     # === Settings for Checkpoints ===
     ################################################
-    checkpoint_freq: 25
+    checkpoint_freq: 100
     checkpoint_at_end: True
     keep_checkpoints_num: 5
 
@@ -30,7 +32,7 @@ procgen-ppo:
         ################################################
         # === Settings for the Procgen Environment ===
         ################################################
-        ################################################            
+        ################################################
         env_config:
             # Name of the procgen environment to train on # Note, that this parameter will be overriden during the evaluation by the AIcrowd evaluators.
             env_name: miner
@@ -48,6 +50,9 @@ procgen-ppo:
             use_sequential_levels: False
             # What variant of the levels to use, the options are "easy", "hard", "extreme", "memory", "exploration". All games support "easy" and "hard", while other options are game-specific. The default is "hard". Switching to "easy" will reduce the number of timesteps required to solve each game and is useful for testing or when working with limited compute resources. NOTE : During the evaluation phase (rollout), this will always be overriden to "easy"
             distribution_mode: easy
+            use_backgrounds: True
+            restrict_themes: False
+            use_monochrome_assets: False
 
         ################################################
         ################################################
@@ -59,7 +64,7 @@ procgen-ppo:
         # The GAE(lambda) parameter.
         lambda: 0.95
         # The default learning rate.
-        lr: 0.0006
+        lr: 0.0006109382386874989
         # Number of SGD iterations in each outer loop (i.e., number of epochs to
         # execute per train batch).
         num_sgd_iter: 2
@@ -78,12 +83,12 @@ procgen-ppo:
         # you set vf_share_layers: True.
         vf_loss_coeff: 0.5282079997171755
         # Coefficient of the entropy regularizer.
-        entropy_coeff: 0.0018
+        entropy_coeff: 0.0018357092350230432
         # PPO clip parameter.
         clip_param: 0.2
         # Clip param for the value function. Note that this is sensitive to the
         # scale of the rewards. If your expected V is large, increase this.
-        vf_clip_param: 0.36
+        vf_clip_param: 0.3596127848861489
         # If specified, clip the global norm of gradients by this amount.
         grad_clip: 0.5
         # Which observation filter to apply to the observation.
@@ -272,14 +277,6 @@ procgen-ppo:
             # EpsilonGreedy)
             type: "StochasticSampling"
             # Can add constructor kwargs here (if any)
-        # We use this to generate the videos during training
-        evaluation_interval: 25
-        evaluation_num_workers: 1
-        evaluation_num_episodes: 3
-        evaluation_config:
-            num_envs_per_worker: 1
-            env_config:
-                render_mode: rgb_array
 
         ################################################
         ################################################
