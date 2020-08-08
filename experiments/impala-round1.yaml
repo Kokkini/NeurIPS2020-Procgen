@@ -272,6 +272,14 @@ procgen-ppo:
             # EpsilonGreedy)
             type: "StochasticSampling"
             # Can add constructor kwargs here (if any)
+        # We use this to generate the videos during training
+        evaluation_interval: 25
+        evaluation_num_workers: 1
+        evaluation_num_episodes: 3
+        evaluation_config:
+            num_envs_per_worker: 1
+            env_config:
+                render_mode: rgb_array
 
         ################################################
         ################################################
