@@ -74,15 +74,22 @@ class TranslateNet(TFModelV2):
         # explicit cast to float32 needed in eager
         obs = tf.cast(input_dict["obs"], tf.float32)
         # random padding
-        obs = tf.map_fn(lambda image: tf.image.pad_to_bounding_box(image,
-                                                                   tf.random.uniform(shape=[], minval=0,
-                                                                                     maxval=self.pad_shape[0] - 64,
-                                                                                     dtype=tf.int64),
-                                                                   tf.random.uniform(shape=[], minval=0,
-                                                                                     maxval=self.pad_shape[1] - 64,
-                                                                                     dtype=tf.int64),
-                                                                   self.pad_shape[0], self.pad_shape[1]), obs)
-
+        # obs = tf.map_fn(lambda image: tf.image.pad_to_bounding_box(image,
+        #                                                            tf.random.uniform(shape=[], minval=0,
+        #                                                                              maxval=self.pad_shape[0] - 64,
+        #                                                                              dtype=tf.int64),
+        #                                                            tf.random.uniform(shape=[], minval=0,
+        #                                                                              maxval=self.pad_shape[1] - 64,
+        #                                                                              dtype=tf.int64),
+        #                                                            self.pad_shape[0], self.pad_shape[1]), obs)
+        tf.image.pad_to_bounding_box(obs,
+                                    tf.random.uniform(shape=[], minval=0,
+                                                      maxval=self.pad_shape[0] - 64,
+                                                      dtype=tf.int64),
+                                    tf.random.uniform(shape=[], minval=0,
+                                                      maxval=self.pad_shape[1] - 64,
+                                                      dtype=tf.int64),
+                                    self.pad_shape[0], self.pad_shape[1])
         logits, self._value = self.base_model(obs)
         return logits, state
 
