@@ -82,7 +82,7 @@ class TranslateNet(TFModelV2):
         #                                                                              maxval=self.pad_shape[1] - 64,
         #                                                                              dtype=tf.int64),
         #                                                            self.pad_shape[0], self.pad_shape[1]), obs)
-        tf.image.pad_to_bounding_box(obs,
+        obs = tf.image.pad_to_bounding_box(obs,
                                     tf.random.uniform(shape=[], minval=0,
                                                       maxval=self.pad_shape[0] - 64,
                                                       dtype=tf.int64),
