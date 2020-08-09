@@ -233,6 +233,10 @@ def create_parser(parser_creator=None):
         "--custom-callbacks",
         default=None,
         type=int)
+    parser.add_argument(
+        "--env-name",
+        default=None,
+        type=str)
     return parser
 
 
@@ -253,6 +257,8 @@ def run(args, parser):
                     exp["config"]["exploration_config"]["type"] = args_dict["exploration_config"]
                 if args_dict["grayscale"] is not None:
                     exp["config"]["model"]["grayscale"] = args_dict["grayscale"]
+                if args_dict["env_name"] is not None:
+                    exp["config"]["env_config"]["env_name"] = args_dict["env_name"]
                 for a in args_dict:
                     if a in exp["config"] and args_dict[a] is not None: exp["config"][a] = args_dict[a]
                 try:
