@@ -60,14 +60,14 @@ procgen-ppo:
         ################################################
         ################################################
         # Discount factor of the MDP.
-        gamma: 0.997
+        gamma: 0.99
         # The GAE(lambda) parameter.
         lambda: 0.95
         # The default learning rate.
-        lr: 0.00094
+        lr: 0.0005
         # Number of SGD iterations in each outer loop (i.e., number of epochs to
         # execute per train batch).
-        num_sgd_iter: 2
+        num_sgd_iter: 3
         # Total SGD batch size across all devices for SGD. This defines the
         # minibatch size within each epoch.
         sgd_minibatch_size: 2048 # 8 minibatches per epoch
@@ -81,14 +81,14 @@ procgen-ppo:
         kl_target: 0.01
         # Coefficient of the value function loss. IMPORTANT: you must tune this if
         # you set vf_share_layers: True.
-        vf_loss_coeff: 0.5282079997171755
+        vf_loss_coeff: 1.0
         # Coefficient of the entropy regularizer.
-        entropy_coeff: 0.0018357092350230432
+        entropy_coeff: 0.1
         # PPO clip parameter.
         clip_param: 0.2
         # Clip param for the value function. Note that this is sensitive to the
         # scale of the rewards. If your expected V is large, increase this.
-        vf_clip_param: 0.3596127848861489
+        vf_clip_param: 0.4
         # If specified, clip the global norm of gradients by this amount.
         grad_clip: 10
         # Which observation filter to apply to the observation.
@@ -112,7 +112,7 @@ procgen-ppo:
         normalize_actions: False
         # Whether to clip rewards prior to experience postprocessing. Setting to
         # None means clip for Atari only.
-        clip_rewards: null
+        clip_rewards: True
         # Whether to np.clip() actions to the action space low/high range spec.
         clip_actions: True
         # Whether to use rllib or deepmind preprocessors by default
@@ -192,7 +192,7 @@ procgen-ppo:
             # Examples of implementing the model in Keras is also available
             # here :
             # https://github.com/ray-project/ray/blob/master/rllib/examples/custom_keras_model.py
-            custom_model: impala_cnn_tf
+            custom_model: translate_net
             # Extra options to pass to custom class
             custom_options: {}
 
