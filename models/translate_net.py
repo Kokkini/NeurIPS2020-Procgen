@@ -53,7 +53,9 @@ class TranslateNet(TFModelV2):
 
         depths = [16, 32, 32]
         self.original_shape = obs_space.shape
-        self.pad_shape = [72, 72, 3]
+        print("obs space:", obs_space.shape)
+        channels = obs_space.shape[-1]
+        self.pad_shape = [72, 72, channels]
 
         inputs = tf.keras.layers.Input(shape=self.pad_shape, name="observations")
         scaled_inputs = tf.cast(inputs, tf.float32) / 255.0

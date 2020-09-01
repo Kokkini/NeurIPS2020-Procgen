@@ -1,7 +1,5 @@
-        
-            
 procgen-ppo:
-    env: procgen_env_wrapper  # Change this at your own risk :D
+    env: my_procgen_wrapper  # Change this at your own risk :D
     run: PPO
     # Can be replaced by any of the available agents as described at : 
     # https://github.com/ray-project/ray/blob/master/rllib/agents/registry.py#L103
@@ -53,7 +51,7 @@ procgen-ppo:
             use_backgrounds: True
             restrict_themes: False
             use_monochrome_assets: False
-            hue: True
+            hue: False
             queue_length: 2
 
         ################################################
