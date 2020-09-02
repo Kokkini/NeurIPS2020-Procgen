@@ -195,7 +195,7 @@ procgen-ppo:
             custom_model: translate_net
             # Extra options to pass to custom class
             custom_options:
-				depths: [32,64,64]
+                depths: [32,64,64]
 
         ################################################
         ################################################
