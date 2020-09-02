@@ -50,8 +50,7 @@ class TranslateNet(TFModelV2):
 
     def __init__(self, obs_space, action_space, num_outputs, model_config, name):
         super().__init__(obs_space, action_space, num_outputs, model_config, name)
-
-        depths = [16, 32, 32]
+        depths = model_config.get("custom_options", {}).get("depths", [16, 32, 32])
         self.original_shape = obs_space.shape
         print("obs space:", obs_space.shape)
         channels = obs_space.shape[-1]
