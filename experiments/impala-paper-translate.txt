@@ -64,7 +64,7 @@ procgen-ppo:
         # The GAE(lambda) parameter.
         lambda: 0.95
         # The default learning rate.
-        lr: 0.0005
+        lr: 0.001
         # Number of SGD iterations in each outer loop (i.e., number of epochs to
         # execute per train batch).
         num_sgd_iter: 4
