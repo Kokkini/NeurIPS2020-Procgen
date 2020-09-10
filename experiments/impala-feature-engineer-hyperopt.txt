@@ -1,5 +1,5 @@
 procgen-ppo:
-    env: my_procgen_wrapper  # Change this at your own risk :D
+    env: procgen_env_wrapper  # Change this at your own risk :D
     run: PPO
     # Can be replaced by any of the available agents as described at : 
     # https://github.com/ray-project/ray/blob/master/rllib/agents/registry.py#L103
@@ -52,8 +52,8 @@ procgen-ppo:
             use_backgrounds: True
             restrict_themes: False
             use_monochrome_assets: False
-            hue: False
-            queue_length: 2
+            # hue: False
+            # queue_length: 2
 
         ################################################
         ################################################
@@ -65,7 +65,7 @@ procgen-ppo:
         # The GAE(lambda) parameter.
         lambda: 0.95
         # The default learning rate.
-        lr: 0.00035
+        lr: 0.0001
         # Number of SGD iterations in each outer loop (i.e., number of epochs to
         # execute per train batch).
         num_sgd_iter: 3
@@ -75,16 +75,16 @@ procgen-ppo:
         # Training batch size, if applicable. Should be >= rollout_fragment_length.
         # Samples batches will be concatenated together to a batch of this size,
         # which is then passed to SGD.
-        train_batch_size: 2048 # 256 * 64
+        train_batch_size: 8192 # 256 * 64
         # Initial coefficient for KL divergence.
         kl_coeff: 0.0
         # Target value for KL divergence.
         kl_target: 0.01
         # Coefficient of the value function loss. IMPORTANT: you must tune this if
         # you set vf_share_layers: True.
-        vf_loss_coeff: 1.0
+        vf_loss_coeff: 0.3
         # Coefficient of the entropy regularizer.
-        entropy_coeff: 0.01
+        entropy_coeff: 0.006
         # PPO clip parameter.
         clip_param: 0.2
         # Clip param for the value function. Note that this is sensitive to the
@@ -196,7 +196,7 @@ procgen-ppo:
             custom_model: translate_net
             # Extra options to pass to custom class
             custom_options:
-                depths: [16,32,32]
+                depths: [32,64,64]
 
         ################################################
         ################################################
@@ -277,8 +277,15 @@ procgen-ppo:
             # You can also provide the python class directly or the full location
             # of your class (e.g. "ray.rllib.utils.exploration.epsilon_greedy.
             # EpsilonGreedy)
-            type: "StochasticSampling"
+            type: SoftQ
+            temperature: 1.0
             # Can add constructor kwargs here (if any)
+        evaluation_config:
+            explore: True
+            exploration_config:
+                type: SoftQ
+                temperature: 0.25
+				
 
         ################################################
         ################################################
@@ -298,4 +305,3 @@ procgen-ppo:
         # each worker, so that identically configured trials will have identical
         # results. This makes experiments reproducible.
         seed: null
-        

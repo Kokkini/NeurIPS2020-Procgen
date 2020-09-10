@@ -281,7 +281,7 @@ procgen-ppo:
             temperature: 1.0
             # Can add constructor kwargs here (if any)
             
-          evaluation_config:
+        evaluation_config:
             explore: True
             exploration_config:
                 type: SoftQ
