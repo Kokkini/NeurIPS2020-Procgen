@@ -280,14 +280,12 @@ procgen-ppo:
             type: SoftQ
             temperature: 1.0
             # Can add constructor kwargs here (if any)
-            
+        
         evaluation_config:
             explore: True
             exploration_config:
                 type: SoftQ
                 temperature: 0.25
-				
-
         ################################################
         ################################################
         # === Advanced Rollout Settings ===
@@ -306,3 +304,4 @@ procgen-ppo:
         # each worker, so that identically configured trials will have identical
         # results. This makes experiments reproducible.
         seed: null
+        
