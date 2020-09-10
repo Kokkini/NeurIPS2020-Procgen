@@ -278,14 +278,14 @@ procgen-ppo:
             # of your class (e.g. "ray.rllib.utils.exploration.epsilon_greedy.
             # EpsilonGreedy)
             type: SoftQ
-			temperature: 1.0
+			      temperature: 1.0
             # Can add constructor kwargs here (if any)
 		
-		evaluation_config:
-			explore: True
-			exploration_config:
-				type: SoftQ
-				temperature: 0.25
+        evaluation_config:
+            explore: True
+            exploration_config:
+                type: SoftQ
+                temperature: 0.25
 				
 
         ################################################
