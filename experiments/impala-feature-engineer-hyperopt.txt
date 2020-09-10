@@ -65,7 +65,7 @@ procgen-ppo:
         # The GAE(lambda) parameter.
         lambda: 0.95
         # The default learning rate.
-        lr: 0.00035
+        lr: 0.0001
         # Number of SGD iterations in each outer loop (i.e., number of epochs to
         # execute per train batch).
         num_sgd_iter: 3
@@ -82,9 +82,9 @@ procgen-ppo:
         kl_target: 0.01
         # Coefficient of the value function loss. IMPORTANT: you must tune this if
         # you set vf_share_layers: True.
-        vf_loss_coeff: 1.0
+        vf_loss_coeff: 0.3
         # Coefficient of the entropy regularizer.
-        entropy_coeff: 0.01
+        entropy_coeff: 0.006
         # PPO clip parameter.
         clip_param: 0.2
         # Clip param for the value function. Note that this is sensitive to the
