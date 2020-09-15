@@ -18,9 +18,9 @@ if [[ -z $AICROWD_IS_GRADING ]]; then
   ##########################################################################
 
   export OUTPUTS_DIR=./outputs
-  export RAY_MEMORY_LIMIT=1500000000
+  export RAY_MEMORY_LIMIT=60129542144
   export RAY_CPUS=2
-  export RAY_STORE_MEMORY=1000000000
+  export RAY_STORE_MEMORY=3000000000
 
   # Cleaning output directory between multiple runs
   rm -rf ${OUTPUTS_DIR}
@@ -73,7 +73,7 @@ if [[ " $@ " =~ " --train " ]]; then
   export VALID_RUN=true
   echo "Executing: python train.py -f ${EXPERIMENT} --ray-memory ${RAY_MEMORY_LIMIT:-1500000000} --ray-num-cpus ${RAY_CPUS:-2} --ray-object-store-memory ${RAY_STORE_MEMORY:-1000000000}"
   #python train.py -f ${EXPERIMENT} --ray-memory ${RAY_MEMORY_LIMIT:-1500000000} --ray-num-cpus ${RAY_CPUS:-2} --ray-object-store-memory ${RAY_STORE_MEMORY:-1000000000}
-  python train_tune.py -f ${EXPERIMENT} --env-name=${ENVIRONMENT_NAME} --num-workers=4 --num-cpus-per-worker=0.25 --timesteps-total 8000000 --ray-memory ${RAY_MEMORY_LIMIT:-60129542144} --ray-num-cpus ${RAY_CPUS:-2} --ray-object-store-memory ${RAY_STORE_MEMORY:-3000000000}
+  python train_tune.py -f ${EXPERIMENT} --env-name=${ENVIRONMENT_NAME} --num-workers=4 --num-cpus-per-worker=0.25 --timesteps-total 10000 --ray-memory ${RAY_MEMORY_LIMIT:-60129542144} --ray-num-cpus ${RAY_CPUS:-2} --ray-object-store-memory ${RAY_STORE_MEMORY:-3000000000}
   STATUS_CODE=$?
 fi
 
@@ -88,7 +88,7 @@ if [[ " $@ " =~ " --rollout " ]]; then
   fi
   echo "Rollout with checkpoint: $CHECKPOINT"
   echo "Executing: python ./rollout.py $CHECKPOINT --episodes ${EPISODES:-1000} --run $ROLLOUT_RUN --env $ROLLOUT_ENV"
-  python ./rollout_render.py $CHECKPOINT --episodes ${EPISODES:-1000} --run $ROLLOUT_RUN --exploration=1 --temperature=0.25 --distribution-mode=easy --num_levels=0
+  python ./rollout_render.py $CHECKPOINT --episodes ${EPISODES:-1000} --run $ROLLOUT_RUN --exploration=1 --distribution-mode=easy --num_levels=0
   STATUS_CODE=$?
 fi
 
