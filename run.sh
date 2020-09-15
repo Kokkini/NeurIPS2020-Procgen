@@ -5,7 +5,7 @@ set -e
 # Your experiment file for submission   #
 #########################################
 
-export EXPERIMENT_DEFAULT="experiments/impala-feature-engineer-hyperopt.txt"
+export EXPERIMENT_DEFAULT="experiments/impala-subtract-and-size.txt"
 #export EXPERIMENT_DEFAULT="experiments/impala.yaml"
 #export EXPERIMENT_DEFAULT="experiments/impala-baseline.yaml"
 export EXPERIMENT=${EXPERIMENT:-$EXPERIMENT_DEFAULT}
