@@ -241,7 +241,7 @@ def create_parser(parser_creator=None):
         "--env-name",
         default=None,
         type=str)
-	parser.add_argument(
+    parser.add_argument(
         "--num_levels",
         default=None,
         type=int)

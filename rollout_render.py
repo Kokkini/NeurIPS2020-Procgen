@@ -420,8 +420,8 @@ def rollout(agent,
 
     steps = 0
     episodes = 0
-	all_reward = []
-	all_length = []
+    all_reward = []
+    all_length = []
     while keep_going(steps, num_steps, episodes, num_episodes):
         mapping_cache = {}  # in case policy_agent_mapping is stochastic
         saver.begin_rollout()
