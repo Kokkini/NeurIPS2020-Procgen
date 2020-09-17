@@ -241,6 +241,10 @@ def create_parser(parser_creator=None):
         "--env-name",
         default=None,
         type=str)
+	parser.add_argument(
+        "--num_levels",
+        default=None,
+        type=int)
     return parser
 
 
@@ -255,6 +259,7 @@ def run(args, parser):
             print(experiments)
             for exp in experiments.values():
                 exp["local_dir"] = args.log_dir
+				
                 if args_dict["timesteps_total"] is not None:
                     exp["stop"]["timesteps_total"] = args_dict["timesteps_total"]
                 if args_dict["exploration_config"] is not None:
@@ -263,7 +268,9 @@ def run(args, parser):
                     exp["config"]["model"]["grayscale"] = args_dict["grayscale"]
                 if args_dict["env_name"] is not None:
                     exp["config"]["env_config"]["env_name"] = args_dict["env_name"]
-                for a in args_dict:
+                if args_dict["num_levels"] is not None:
+					exp["config"]["env_config"]["num_levels"] = args_dict["num_levels"]
+				for a in args_dict:
                     if a in exp["config"] and args_dict[a] is not None: exp["config"][a] = args_dict[a]
                 try:
                     num_mini_batch = exp["config"]["num_sgd_iter"] * exp["stop"]["timesteps_total"] / exp["config"]["sgd_minibatch_size"]
