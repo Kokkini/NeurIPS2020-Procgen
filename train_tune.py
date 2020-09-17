@@ -270,7 +270,7 @@ def run(args, parser):
                     exp["config"]["env_config"]["env_name"] = args_dict["env_name"]
                 if args_dict["num_levels"] is not None:
                     exp["config"]["env_config"]["num_levels"] = args_dict["num_levels"]
-				for a in args_dict:
+                for a in args_dict:
                     if a in exp["config"] and args_dict[a] is not None: exp["config"][a] = args_dict[a]
                 try:
                     num_mini_batch = exp["config"]["num_sgd_iter"] * exp["stop"]["timesteps_total"] / exp["config"]["sgd_minibatch_size"]

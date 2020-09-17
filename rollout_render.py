@@ -484,7 +484,7 @@ def rollout(agent,
         saver.end_rollout()
         all_reward.append(reward_total)
         all_length.append(episode_steps)
-        print(f"Episode #{episodes}: mean reward: {np.mean(all_reward)} mean steps: {np.mean(all_length)}"
+        print(f"Episode #{episodes}: mean reward: {np.mean(all_reward)} mean steps: {np.mean(all_length)}")
         if done:
             episodes += 1
 
