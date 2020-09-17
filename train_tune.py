@@ -269,7 +269,7 @@ def run(args, parser):
                 if args_dict["env_name"] is not None:
                     exp["config"]["env_config"]["env_name"] = args_dict["env_name"]
                 if args_dict["num_levels"] is not None:
-					exp["config"]["env_config"]["num_levels"] = args_dict["num_levels"]
+                    exp["config"]["env_config"]["num_levels"] = args_dict["num_levels"]
 				for a in args_dict:
                     if a in exp["config"] and args_dict[a] is not None: exp["config"][a] = args_dict[a]
                 try:
