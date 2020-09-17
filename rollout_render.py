@@ -25,6 +25,7 @@ from ray.rllib.policy.sample_batch import DEFAULT_POLICY_ID
 from ray.rllib.utils.deprecation import deprecation_warning
 from ray.tune.utils import merge_dicts
 from ray.tune.registry import get_trainable_cls
+import numpy as np
 
 from utils.loader import load_envs, load_models, load_algorithms, load_preprocessors
 
@@ -419,6 +420,8 @@ def rollout(agent,
 
     steps = 0
     episodes = 0
+	all_reward = []
+	all_length = []
     while keep_going(steps, num_steps, episodes, num_episodes):
         mapping_cache = {}  # in case policy_agent_mapping is stochastic
         saver.begin_rollout()
@@ -479,7 +482,9 @@ def rollout(agent,
             steps += 1
             obs = next_obs
         saver.end_rollout()
-        print("Episode #{}: reward: {} steps: {}".format(episodes, reward_total, episode_steps))
+        all_reward.append(reward_total)
+		all_length.append(episode_steps)
+		print(f"Episode #{episodes}: mean reward: {np.mean(all_reward)} mean steps: {np.mean(all_length)}"
         if done:
             episodes += 1
 
