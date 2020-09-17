@@ -73,7 +73,7 @@ if [[ " $@ " =~ " --train " ]]; then
   export VALID_RUN=true
   echo "Executing: python train.py -f ${EXPERIMENT} --ray-memory ${RAY_MEMORY_LIMIT:-1500000000} --ray-num-cpus ${RAY_CPUS:-2} --ray-object-store-memory ${RAY_STORE_MEMORY:-1000000000}"
   #python train.py -f ${EXPERIMENT} --ray-memory ${RAY_MEMORY_LIMIT:-1500000000} --ray-num-cpus ${RAY_CPUS:-2} --ray-object-store-memory ${RAY_STORE_MEMORY:-1000000000}
-  python train_tune.py -f ${EXPERIMENT} --env-name=${ENVIRONMENT_NAME} --num-workers=4 --num-cpus-per-worker=0.25 --timesteps-total 10000 --ray-memory ${RAY_MEMORY_LIMIT:-60129542144} --ray-num-cpus ${RAY_CPUS:-2} --ray-object-store-memory ${RAY_STORE_MEMORY:-3000000000}
+  python train_tune.py -f ${EXPERIMENT} --env-name=${ENVIRONMENT_NAME} --num-workers=4 --num-cpus-per-worker=0.25 --ray-memory ${RAY_MEMORY_LIMIT:-60129542144} --ray-num-cpus ${RAY_CPUS:-2} --ray-object-store-memory ${RAY_STORE_MEMORY:-3000000000}
   STATUS_CODE=$?
 fi
 
