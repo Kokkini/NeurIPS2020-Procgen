@@ -11,12 +11,12 @@ tf = try_import_tf()
 from functools import partial
 import numpy as np
 
-conv = partial(tf.keras.layers.Conv2D, activation=None)
-dconv = partial(tf.keras.layers.Conv2DTranspose, activation=None)
-fc = partial(tf.keras.layers.Dense, activation=None)
-relu = tf.nn.relu
-lrelu = tf.nn.leaky_relu
-batch_norm = partial(tf.keras.layers.BatchNormalization, scale=True, updates_collections=None)
+# conv = partial(tf.keras.layers.Conv2D, activation=None)
+# dconv = partial(tf.keras.layers.Conv2DTranspose, activation=None)
+# fc = partial(tf.keras.layers.Dense, activation=None)
+# relu = tf.nn.relu
+# lrelu = tf.nn.leaky_relu
+# batch_norm = partial(tf.keras.layers.BatchNormalization, scale=True, updates_collections=None)
 
 
 def conv_layer(depth, name):
@@ -85,10 +85,10 @@ def conv_sequence(x, depth, prefix):
     return x
 
 def reverse_conv_sequence(x, depth, prefix):
+    x = conv_transpose_layer(depth, prefix + "_reverse_conv")(x)
     x = reverse_residual_block(x, depth, prefix=prefix + "_reverse_block0")
     x = reverse_residual_block(x, depth, prefix=prefix + "_reverse_block1")
     x = tf.keras.layers.UpSampling2D(2)(x)
-    x = conv_transpose_layer(depth, prefix + "_reverse_conv")(x)
     return x
 
 
@@ -109,7 +109,7 @@ class BetaVaeNet(TFModelV2):
         self.pad_shape = [72, 72, channels]
         shrink_factor = 2**len(depths)
         before_z_dim = np.array([self.pad_shape[0]//shrink_factor, self.pad_shape[1]//shrink_factor, depths[-1]])
-        reverse_depths = depths[::-1][1:] + [channels]
+        reverse_depths = depths[::-1]
 
 
         inputs = tf.keras.layers.Input(shape=self.pad_shape, name="observations")
@@ -132,10 +132,11 @@ class BetaVaeNet(TFModelV2):
 
         x_dec = z
         x_dec = tf.keras.layers.Dense(units=np.prod(before_z_dim))(x_dec)
-        x_dec = tf.keras.layers.RELU()(x_dec)
+        x_dec = tf.keras.layers.ReLU()(x_dec)
         x_dec = tf.reshape(x_dec, [-1]+list(before_z_dim))
         for i, depth in enumerate(reverse_depths):
             x_dec = reverse_conv_sequence(x_dec, depth, prefix=f"reverse_seq{i}")
+        x_dec = conv_transpose_layer(channels, "last_conv_transpose")(x_dec)
         x = z_mu
         logits = tf.keras.layers.Dense(units=num_outputs, name="pi")(x)
         value = tf.keras.layers.Dense(units=1, name="vf")(x)

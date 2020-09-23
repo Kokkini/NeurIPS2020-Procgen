@@ -95,8 +95,8 @@ class PPOLoss:
                                           1 + clip_param))
         self.mean_policy_loss = reduce_mean_valid(-surrogate_loss)
 
-        rec_loss = tf.square(img - img_dec)
-        kld_loss = -(0.5 * (1 + z_log_sigma_sq - z_mu**2 - tf.exp(z_log_sigma_sq)))
+        rec_loss = tf.reduce_mean(tf.square(img - img_dec), axis=[1,2,3])
+        kld_loss = -tf.reduce_mean((0.5 * (1 + z_log_sigma_sq - z_mu**2 - tf.exp(z_log_sigma_sq))), axis=1)
         beta_vae_loss = rec_loss + kld_loss * beta
         self.mean_beta_vae_loss = reduce_mean_valid(beta_vae_loss)
 
