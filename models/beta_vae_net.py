@@ -136,7 +136,7 @@ class BetaVaeNet(TFModelV2):
         x_dec = tf.reshape(x_dec, [-1]+list(before_z_dim))
         for i, depth in enumerate(reverse_depths):
             x_dec = reverse_conv_sequence(x_dec, depth, prefix=f"reverse_seq{i}")
-        x = z
+        x = z_mu
         logits = tf.keras.layers.Dense(units=num_outputs, name="pi")(x)
         value = tf.keras.layers.Dense(units=1, name="vf")(x)
         self.base_model = tf.keras.Model(inputs, [logits, value, scaled_inputs, x_dec, z_mu, z_log_sigma_sq])

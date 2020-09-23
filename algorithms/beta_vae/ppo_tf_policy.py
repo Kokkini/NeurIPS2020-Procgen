@@ -98,6 +98,7 @@ class PPOLoss:
         rec_loss = tf.square(img - img_dec)
         kld_loss = -(0.5 * (1 + z_log_sigma_sq - z_mu**2 - tf.exp(z_log_sigma_sq)))
         beta_vae_loss = rec_loss + kld_loss * beta
+        self.mean_beta_vae_loss = reduce_mean_valid(beta_vae_loss)
 
         if use_gae:
             vf_loss1 = tf.square(value_fn - value_targets)
@@ -165,6 +166,7 @@ def kl_and_loss_stats(policy, train_batch):
         "total_loss": policy.loss_obj.loss,
         "policy_loss": policy.loss_obj.mean_policy_loss,
         "vf_loss": policy.loss_obj.mean_vf_loss,
+        "beta_vae_loss": policy.loss_obj.mean_beta_vae_loss,
         "vf_explained_var": explained_variance(
             train_batch[Postprocessing.VALUE_TARGETS],
             policy.model.value_function()),
