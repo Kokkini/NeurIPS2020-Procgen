@@ -67,7 +67,7 @@ class MergeChangesNet(TFModelV2):
         x = tf.keras.layers.ReLU()(x)
         x = tf.keras.layers.Dense(units=256, name="hidden")(x)
         # x = tf.keras.layers.ReLU()(x)
-        x = tf.keras.layers.LayerNormalization(axis=[-3,-2])(x)
+        x = tf.keras.layers.LayerNormalization()(x)
         x = tf.keras.activations.tanh(x)
         logits = tf.keras.layers.Dense(units=num_outputs, name="pi",
                                        kernel_initializer=tf.keras.initializers.Orthogonal(gain=0.01))(x)
