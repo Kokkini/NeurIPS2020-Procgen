@@ -11,18 +11,17 @@ from gym.spaces import Box
 from gym import Wrapper
 from .utils import *
 
-class MyProcgenWrapper(Wrapper):
-    def __init__(self, env, queue_length, hue=False, reward_norm=False):
-        super(MyProcgenWrapper, self).__init__(env)
+class RewardNormalizedWrapper(Wrapper):
+    def __init__(self, env, queue_length, hue=False):
+        super(RewardNormalizedWrapper, self).__init__(env)
         self.queue_length = queue_length
         self.hue = hue
         self.frames = deque(maxlen=queue_length)
-        self.rew_normalizer = None
-        if reward_norm:
-            self.rew_normalizer = RewardNormalizer()
 
         self.observation_space.low = self.observation_space.low.astype(np.int32)
         self.observation_space.high = self.observation_space.high.astype(np.int32)
+
+        self.rew_normalizer = RewardNormalizer()
         low = np.concatenate([self.observation_space.low, self.observation_space.low-self.observation_space.high], axis=-1)
         high = np.concatenate([self.observation_space.high, self.observation_space.high], axis=-1)
         if hue:
@@ -46,10 +45,9 @@ class MyProcgenWrapper(Wrapper):
 
     def step(self, action):
         observation, reward, done, info = self.env.step(action)
+        normed_rew = self.rew_normalizer.normalize(np.array([reward]), np.array([False]))
         self.frames.append(observation.astype(np.int32))
-        if self.rew_normalizer is not None:
-            reward = self.rew_normalizer.normalize(np.array([reward]), np.array([False]))
-        return self._get_observation(), reward, done, info
+        return self._get_observation(), normed_rew, done, info
 
     def reset(self, **kwargs):
         observation = self.env.reset(**kwargs)
@@ -59,12 +57,11 @@ class MyProcgenWrapper(Wrapper):
 def create_my_custom_env(config):
     hue = config.pop("hue", False)
     queue_length = config.pop("queue_length", 2)
-    reward_norm = config.pop("reward_norm", False)
     env = ProcgenEnvWrapper(config)
-    env = MyProcgenWrapper(env, queue_length, hue, reward_norm)
+    env = RewardNormalizedWrapper(env, queue_length, hue)
     return env
 
 
 registry.register_env(
-    "my_procgen_wrapper", create_my_custom_env
+    "reward_normalized_wrapper", create_my_custom_env
 )
