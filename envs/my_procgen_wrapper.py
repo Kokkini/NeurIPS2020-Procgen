@@ -9,7 +9,7 @@ import cv2
 from envs.procgen_env_wrapper import ProcgenEnvWrapper
 from gym.spaces import Box
 from gym import Wrapper
-from .utils import *
+from envs.utils import RewardNormalizer
 
 class MyProcgenWrapper(Wrapper):
     def __init__(self, env, queue_length, hue=False, reward_norm=False):
@@ -48,7 +48,7 @@ class MyProcgenWrapper(Wrapper):
         observation, reward, done, info = self.env.step(action)
         self.frames.append(observation.astype(np.int32))
         if self.rew_normalizer is not None:
-            reward = self.rew_normalizer.normalize(np.array([reward]), np.array([False]))
+            reward = self.rew_normalizer.normalize(np.array([reward]), np.array([False]))[0]
         return self._get_observation(), reward, done, info
 
     def reset(self, **kwargs):
