@@ -62,7 +62,7 @@ procgen-ppo:
         ################################################
         ################################################
         # Discount factor of the MDP.
-        gamma: 0.99
+        gamma: 0.996
         # The GAE(lambda) parameter.
         lambda: 0.95
         # The default learning rate.
