@@ -53,8 +53,8 @@ procgen-ppo:
             use_backgrounds: True
             restrict_themes: False
             use_monochrome_assets: False
-            hue: False
-            queue_length: 2
+            #hue: False
+            #queue_length: 2
 
         ################################################
         ################################################
