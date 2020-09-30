@@ -51,6 +51,7 @@ def get_enc_dec(z_dim, depths, before_z_dim, channels):
         with tf.variable_scope('Enc', reuse=tf.AUTO_REUSE):
             for d in depths:
                 y = tf.keras.layers.Conv2D(filters=d, activation="relu", kernel_size=4, strides=2, padding="same")(y)
+            y = tf.keras.layers.Flatten()(y)
             z_mu = tf.keras.layers.Dense(units=z_dim)(y)
             z_log_sigma_sq = tf.keras.layers.Dense(units=z_dim)(y)
             return z_mu, z_log_sigma_sq
