@@ -121,6 +121,8 @@ class BetaVaeNetSeparate(TFModelV2):
             x = tf.keras.layers.LayerNormalization()(x)
             z_mu_1 = tf.keras.layers.LayerNormalization()(z_mu_1)
 
+        impala_base = x
+
         if use_impala_features and use_vae_features:
             x = tf.concat([x, z_mu_1], axis=1)
         elif use_impala_features:
@@ -139,6 +141,9 @@ class BetaVaeNetSeparate(TFModelV2):
         value = tf.keras.layers.Dense(units=1, name="vf")(x)
         self.base_model = tf.keras.Model(inputs, [logits, value, scaled_inputs, x_dec, z_mu, z_log_sigma_sq])
         self.register_variables(self.base_model.variables)
+        if use_impala_features == False:
+            impala_base_model = tf.keras.Model(inputs, [impala_base])
+            self.register_variables(self.impala_base_model.variables)
 
     def forward(self, input_dict, state, seq_lens):
         # explicit cast to float32 needed in eager
