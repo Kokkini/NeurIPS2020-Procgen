@@ -143,7 +143,7 @@ class BetaVaeNetSeparate(TFModelV2):
         self.register_variables(self.base_model.variables)
         if use_impala_features == False:
             impala_base_model = tf.keras.Model(inputs, [impala_base])
-            self.register_variables(self.impala_base_model.variables)
+            self.register_variables(impala_base_model.variables)
 
     def forward(self, input_dict, state, seq_lens):
         # explicit cast to float32 needed in eager
