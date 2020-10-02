@@ -82,6 +82,11 @@ class BetaVaeNetSeparate(TFModelV2):
         vae_depths = model_config.get("custom_options", {}).get("vae_depths", [16, 32, 32])
         z_dim = model_config.get("custom_options", {}).get("z_dim", 100)
         regu = model_config.get("custom_options", {}).get("regu", False)
+        vae_grad = model_config.get("custom_options", {}).get("vae_grad", True)
+        vae_norm = model_config.get("custom_options", {}).get("vae_norm", False)
+        use_vae_features = model_config.get("custom_options", {}).get("use_vae_features", True)
+        use_impala_features = model_config.get("custom_options", {}).get("use_impala_features", True)
+        dense_depths = model_config.get("custom_options", {}).get("dense_depths", [256])
         self.original_shape = obs_space.shape
         print("obs space:", obs_space.shape)
         channels = obs_space.shape[-1]
@@ -100,15 +105,35 @@ class BetaVaeNetSeparate(TFModelV2):
 
         x = tf.keras.layers.Flatten()(x)
         x = tf.keras.layers.ReLU()(x)
-        x = tf.keras.layers.Dense(units=256, activation="relu", name="hidden")(x)
-
+        x = tf.keras.layers.Dense(units=dense_depths[0], activation="relu", name="hidden")(x)
+        
         z_mu, z_log_sigma_sq = enc(scaled_inputs)
         epsilon = tf.random_normal(tf.shape(z_mu))
         z = z_mu + tf.exp(0.5 * z_log_sigma_sq) * epsilon
 
         x_dec = dec(z)
 
-        x = tf.concat([x, z_mu], axis=1)
+        z_mu_1 = z_mu
+        if not vae_grad:
+            z_mu_1 = tf.stop_gradient(z_mu)
+        
+        if vae_norm:
+            x = tf.keras.layers.LayerNormalization()(x)
+            z_mu_1 = tf.keras.layers.LayerNormalization()(z_mu_1)
+
+        if use_impala_features and use_vae_features:
+            x = tf.concat([x, z_mu_1], axis=1)
+        elif use_impala_features:
+            x = x
+        elif use_vae_features:
+            x = z_mu_1
+        else:
+            print("at least one of use_vae_features or use_impala_features must be True")
+            exit(1)
+
+        for ix in range(1, len(dense_depths)):
+            x = tf.keras.layers.Dense(units=dense_depths[ix], activation="relu")(x)
+
 
         logits = tf.keras.layers.Dense(units=num_outputs, name="pi")(x)
         value = tf.keras.layers.Dense(units=1, name="vf")(x)

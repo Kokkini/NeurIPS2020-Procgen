@@ -104,7 +104,13 @@ procgen-ppo:
             custom_options:
                 depths: [32,64,64]
                 vae_depths: [16,32,32]
+                dense_depths: [256]
                 z_dim: 64
+                vae_grad: True
+                vae_norm: False
+                use_vae_features: True
+                use_impala_features: True
+                regu: False
 
         num_workers: 6
         num_envs_per_worker: 8
