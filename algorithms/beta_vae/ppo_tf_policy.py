@@ -182,6 +182,13 @@ def vf_preds_fetches(policy):
         SampleBatch.VF_PREDS: policy.model.value_function(),
     }
 
+def vf_preds_fetches_test(policy):
+    """Adds value function outputs to experience train_batches."""
+    return {
+        SampleBatch.VF_PREDS: policy.model.value_function(),
+        "decoded_image": policy.model.img_dec,
+    }
+
 
 def postprocess_ppo_gae(policy,
                         sample_batch,
@@ -288,6 +295,22 @@ PPOTFPolicy = build_tf_policy(
     loss_fn=ppo_surrogate_loss,
     stats_fn=kl_and_loss_stats,
     extra_action_fetches_fn=vf_preds_fetches,
+    postprocess_fn=postprocess_ppo_gae,
+    gradients_fn=clip_gradients,
+    before_init=setup_config,
+    before_loss_init=setup_mixins,
+    mixins=[
+        LearningRateSchedule, EntropyCoeffSchedule, KLCoeffMixin,
+        ValueNetworkMixin
+    ])
+
+
+PPOTFPolicyTest = build_tf_policy(
+    name="PPOTFPolicyTest",
+    get_default_config=lambda: ray.rllib.agents.ppo.ppo.DEFAULT_CONFIG,
+    loss_fn=ppo_surrogate_loss,
+    stats_fn=kl_and_loss_stats,
+    extra_action_fetches_fn=vf_preds_fetches_test,
     postprocess_fn=postprocess_ppo_gae,
     gradients_fn=clip_gradients,
     before_init=setup_config,

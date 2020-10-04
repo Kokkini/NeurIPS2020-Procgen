@@ -1,7 +1,7 @@
 import logging
 
 from ray.rllib.agents import with_common_config
-from .ppo_tf_policy import PPOTFPolicy
+from .ppo_tf_policy import PPOTFPolicy, PPOTFPolicyTest
 from ray.rllib.agents.trainer_template import build_trainer
 from ray.rllib.optimizers import SyncSamplesOptimizer, LocalMultiGPUOptimizer
 from ray.rllib.utils import try_import_tf
@@ -192,6 +192,17 @@ BetaVaePPOTrainer = build_trainer(
     name="BetaVaePPO",
     default_config=DEFAULT_CONFIG,
     default_policy=PPOTFPolicy,
+    get_policy_class=get_policy_class,
+    make_policy_optimizer=choose_policy_optimizer,
+    validate_config=validate_config,
+    after_optimizer_step=update_kl,
+    after_train_result=warn_about_bad_reward_scales)
+
+
+BetaVaePPOTrainer = build_trainer(
+    name="BetaVaePPOTest",
+    default_config=DEFAULT_CONFIG,
+    default_policy=PPOTFPolicyTest,
     get_policy_class=get_policy_class,
     make_policy_optimizer=choose_policy_optimizer,
     validate_config=validate_config,
