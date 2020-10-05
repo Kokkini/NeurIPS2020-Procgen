@@ -31,7 +31,7 @@ def _import_beta_vae_ppo():
 
 
 def _import_beta_vae_ppo_test():
-    from .beta_vae.ppo import BetaVaePPOTrainerTest
+    from .beta_vae.ppo_test import BetaVaePPOTrainerTest
     return BetaVaePPOTrainerTest
 
 
