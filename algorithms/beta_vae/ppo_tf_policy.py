@@ -3,7 +3,7 @@ import logging
 import ray
 from ray.rllib.evaluation.postprocessing import compute_advantages, \
     Postprocessing
-from ray.rllib.policy.sample_batch import SampleBatch
+from .sample_batch import SampleBatch
 from ray.rllib.policy.tf_policy import LearningRateSchedule, \
     EntropyCoeffSchedule
 from ray.rllib.policy.tf_policy_template import build_tf_policy
@@ -186,7 +186,7 @@ def vf_preds_fetches_test(policy):
     """Adds value function outputs to experience train_batches."""
     return {
         SampleBatch.VF_PREDS: policy.model.value_function(),
-        "decoded_image": policy.model.img_dec,
+        SampleBatch.DECODED_IMAGE: policy.model.img_dec,
     }
 
 
