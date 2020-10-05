@@ -30,9 +30,15 @@ def _import_beta_vae_ppo():
     return BetaVaePPOTrainer
 
 
+def _import_beta_vae_ppo_test():
+    from .beta_vae.ppo import BetaVaePPOTrainerTest
+    return BetaVaePPOTrainerTest
+
+
 CUSTOM_ALGORITHMS = {
     "custom/CustomRandomAgent": _import_custom_random_agent,
     "RandomPolicy": _import_random_policy,
     "MyPPO": _import_my_ppo,
     "BetaVaePPO": _import_beta_vae_ppo,
+    "BetaVaePPOTest": _import_beta_vae_ppo_test,
 }

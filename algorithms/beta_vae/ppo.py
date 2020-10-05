@@ -199,7 +199,7 @@ BetaVaePPOTrainer = build_trainer(
     after_train_result=warn_about_bad_reward_scales)
 
 
-BetaVaePPOTrainer = build_trainer(
+BetaVaePPOTrainerTest = build_trainer(
     name="BetaVaePPOTest",
     default_config=DEFAULT_CONFIG,
     default_policy=PPOTFPolicyTest,
