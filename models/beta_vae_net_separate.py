@@ -136,7 +136,7 @@ class BetaVaeNetSeparate(TFModelV2):
             exit(1)
 
         regularizer = tf.keras.regularizers.l1(l=0.01)
-        x = tf.keras.layers.Dense(256, kernel_regularizer=regularizer)
+        x = tf.keras.layers.Dense(256, kernel_regularizer=regularizer)(x)
 
         # for ix in range(1, len(dense_depths)):
         #     x = tf.keras.layers.Dense(units=dense_depths[ix], activation="relu")(x)
