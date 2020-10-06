@@ -39,7 +39,7 @@ procgen-ppo:
         gamma: 0.99
         # The GAE(lambda) parameter.
         lambda: 0.95
-        beta: 10
+        beta: 0.001
         # The default learning rate.
         lr: 0.00015
         lr_schedule: [[0,0.00015],[4000000,0.00015],[4000001, 0.00005]]
@@ -60,7 +60,7 @@ procgen-ppo:
         # Coefficient of the value function loss. IMPORTANT: you must tune this if
         # you set vf_share_layers: True.
         vf_loss_coeff: 0.5
-        vae_loss_coeff: 10
+        vae_loss_coeff: 3
         # Coefficient of the entropy regularizer.
         entropy_coeff: 0.006
         # PPO clip parameter.
@@ -104,10 +104,9 @@ procgen-ppo:
             custom_options:
                 depths: [32,64,64]
                 vae_depths: [16,32,32]
-                dense_depths: [256]
-                z_dim: 64
-                vae_grad: True
-                vae_norm: False
+                z_dim: 128
+                vae_grad: False
+                vae_norm: True
                 use_vae_features: True
                 use_impala_features: True
                 regu: False

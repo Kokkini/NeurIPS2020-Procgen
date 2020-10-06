@@ -52,19 +52,21 @@ def get_enc_dec(z_dim, depths, before_z_dim, channels):
             for d in depths:
                 y = tf.keras.layers.Conv2D(filters=d, activation="relu", kernel_size=4, strides=2, padding="same")(y)
             y = tf.keras.layers.Flatten()(y)
+            y = tf.keras.layers.Dense(256, activation="relu")(y) 
             z_mu = tf.keras.layers.Dense(units=z_dim)(y)
             z_log_sigma_sq = tf.keras.layers.Dense(units=z_dim)(y)
             return z_mu, z_log_sigma_sq
 
     def Dec(z):
         with tf.variable_scope('Dec', reuse=tf.AUTO_REUSE):
-            y = tf.keras.layers.Dense(units=np.prod(before_z_dim))(z)
-            y = tf.keras.layers.ReLU()(y)
+            y = z
+            y = tf.keras.layers.Dense(256, activation="relu")(y)
+            y = tf.keras.layers.Dense(units=np.prod(before_z_dim), activation="relu")(y)
             y = tf.reshape(y, [-1]+list(before_z_dim))
             reverse_depths = depths[::-1]
             for d in reverse_depths[1:]:
                 y = tf.keras.layers.Conv2DTranspose(filters=d, activation="relu", kernel_size=4, strides=2, padding="same")(y)
-            img = tf.keras.layers.Conv2DTranspose(filters=channels, kernel_size=4, strides=2, padding="same")(y)
+            img = tf.keras.layers.Conv2DTranspose(filters=channels, kernel_size=4, strides=1, padding="same")(y)
             return img
     return Enc, Dec
 
@@ -86,13 +88,13 @@ class BetaVaeNetSeparate(TFModelV2):
         vae_norm = model_config.get("custom_options", {}).get("vae_norm", False)
         use_vae_features = model_config.get("custom_options", {}).get("use_vae_features", True)
         use_impala_features = model_config.get("custom_options", {}).get("use_impala_features", True)
-        dense_depths = model_config.get("custom_options", {}).get("dense_depths", [256])
+        # dense_depths = model_config.get("custom_options", {}).get("dense_depths", [256])
         self.original_shape = obs_space.shape
         print("obs space:", obs_space.shape)
         channels = obs_space.shape[-1]
         self.pad_shape = [72, 72, channels]
-        shrink_factor = 2**len(depths)
-        before_z_dim = np.array([self.pad_shape[0]//shrink_factor, self.pad_shape[1]//shrink_factor, depths[-1]])
+        shrink_factor = 2**len(vae_depths)
+        before_z_dim = np.array([self.pad_shape[0]//shrink_factor, self.pad_shape[1]//shrink_factor, vae_depths[-1]])
 
         enc, dec = get_enc_dec(z_dim, vae_depths, before_z_dim, channels)
 
@@ -105,7 +107,7 @@ class BetaVaeNetSeparate(TFModelV2):
 
         x = tf.keras.layers.Flatten()(x)
         x = tf.keras.layers.ReLU()(x)
-        x = tf.keras.layers.Dense(units=dense_depths[0], activation="relu", name="hidden")(x)
+        x = tf.keras.layers.Dense(units=256, activation="relu", name="hidden")(x)
         
         z_mu, z_log_sigma_sq = enc(scaled_inputs)
         epsilon = tf.random_normal(tf.shape(z_mu))
@@ -133,8 +135,11 @@ class BetaVaeNetSeparate(TFModelV2):
             print("at least one of use_vae_features or use_impala_features must be True")
             exit(1)
 
-        for ix in range(1, len(dense_depths)):
-            x = tf.keras.layers.Dense(units=dense_depths[ix], activation="relu")(x)
+        regularizer = tf.keras.regularizers.l1(l=0.01)
+        x = tf.keras.layers.Dense(256, kernel_regularizer=regularizer)
+
+        # for ix in range(1, len(dense_depths)):
+        #     x = tf.keras.layers.Dense(units=dense_depths[ix], activation="relu")(x)
 
 
         logits = tf.keras.layers.Dense(units=num_outputs, name="pi")(x)
