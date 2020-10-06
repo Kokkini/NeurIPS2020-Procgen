@@ -187,7 +187,6 @@ def get_policy_class(config):
     else:
         return PPOTFPolicy
 
-
 BetaVaePPOTrainer = build_trainer(
     name="BetaVaePPO",
     default_config=DEFAULT_CONFIG,

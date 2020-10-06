@@ -175,12 +175,13 @@ def kl_and_loss_stats(policy, train_batch):
         "entropy_coeff": tf.cast(policy.entropy_coeff, tf.float64),
     }
 
-
 def vf_preds_fetches(policy):
     """Adds value function outputs to experience train_batches."""
     return {
         SampleBatch.VF_PREDS: policy.model.value_function(),
+        SampleBatch.DECODED_IMAGE: policy.model.img_dec,
     }
+
 
 def postprocess_ppo_gae(policy,
                         sample_batch,
@@ -295,3 +296,4 @@ PPOTFPolicy = build_tf_policy(
         LearningRateSchedule, EntropyCoeffSchedule, KLCoeffMixin,
         ValueNetworkMixin
     ])
+
