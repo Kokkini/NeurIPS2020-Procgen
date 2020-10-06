@@ -88,6 +88,7 @@ class BetaVaeNetSeparate(TFModelV2):
         vae_norm = model_config.get("custom_options", {}).get("vae_norm", False)
         use_vae_features = model_config.get("custom_options", {}).get("use_vae_features", True)
         use_impala_features = model_config.get("custom_options", {}).get("use_impala_features", True)
+        dense_regu = model_config.get("custom_options", {}).get("dense_regu", False)
         # dense_depths = model_config.get("custom_options", {}).get("dense_depths", [256])
         self.original_shape = obs_space.shape
         print("obs space:", obs_space.shape)
@@ -134,8 +135,10 @@ class BetaVaeNetSeparate(TFModelV2):
         else:
             print("at least one of use_vae_features or use_impala_features must be True")
             exit(1)
-
-        regularizer = tf.keras.regularizers.l1(l=0.01)
+        
+        regularizer = None
+        if dense_regu:
+            regularizer = tf.keras.regularizers.l1(l=0.01)
         x = tf.keras.layers.Dense(256, kernel_regularizer=regularizer)(x)
 
         # for ix in range(1, len(dense_depths)):

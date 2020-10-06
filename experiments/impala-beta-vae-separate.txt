@@ -110,6 +110,7 @@ procgen-ppo:
                 use_vae_features: True
                 use_impala_features: True
                 regu: False
+                dense_regu: False
 
         num_workers: 6
         num_envs_per_worker: 8
