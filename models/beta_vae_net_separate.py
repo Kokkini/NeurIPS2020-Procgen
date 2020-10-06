@@ -64,7 +64,7 @@ def get_enc_dec(z_dim, depths, before_z_dim, channels):
             y = tf.keras.layers.Dense(units=np.prod(before_z_dim), activation="relu")(y)
             y = tf.reshape(y, [-1]+list(before_z_dim))
             reverse_depths = depths[::-1]
-            for d in reverse_depths[1:]:
+            for d in reverse_depths:
                 y = tf.keras.layers.Conv2DTranspose(filters=d, activation="relu", kernel_size=4, strides=2, padding="same")(y)
             img = tf.keras.layers.Conv2DTranspose(filters=channels, kernel_size=4, strides=1, padding="same")(y)
             return img
