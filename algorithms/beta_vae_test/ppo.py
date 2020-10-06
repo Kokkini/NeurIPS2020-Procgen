@@ -185,7 +185,7 @@ def get_policy_class(config):
         from ray.rllib.agents.ppo.ppo_torch_policy import PPOTorchPolicy
         return PPOTorchPolicy
     else:
-        return PPOTFPolicyTest
+        return PPOTFPolicy
 
 
 BetaVaePPOTrainerTest = build_trainer(
