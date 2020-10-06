@@ -1,0 +1,142 @@
+procgen-ppo:
+    env: my_procgen_wrapper  # Change this at your own risk :D
+    #disable_evaluation_worker: True
+    run: BetaVaePPO
+
+    stop:
+        timesteps_total: 8000000
+        #time_total_s: 7200
+
+    checkpoint_freq: 100
+    checkpoint_at_end: True
+    keep_checkpoints_num: 5
+
+    config:
+        env_config:
+            # Name of the procgen environment to train on # Note, that this parameter will be overriden during the evaluation by the AIcrowd evaluators.
+            env_name: bigfish
+            # The number of unique levels that can be generated. Set to 0 to use unlimited levels
+            num_levels: 200
+            # The lowest seed that will be used to generated levels. 'start_level' and 'num_levels' fully specify the set of possible levels
+            start_level: 0
+            # Paint player velocity info in the top left corner. Only supported by certain games.
+            paint_vel_info: False
+            # Use randomly generated assets in place of human designed assets
+            use_generated_assets: False
+            # center_agent : Determines whether observations are centered on the agent or display the full level. Override at your own risk.
+            center_agent: True
+            # sequential levels : When you reach the end of a level, the episode is ended and a new level is selected. If use_sequential_levels is set to True, reaching the end of a level does not end the episode, and the seed for the new level is derived from the current level seed. If you combine this with start_level=<some seed> and num_levels=1, you can have a single linear series of levels similar to a gym-retro or ALE game.
+            use_sequential_levels: False
+            # What variant of the levels to use, the options are "easy", "hard", "extreme", "memory", "exploration". All games support "easy" and "hard", while other options are game-specific. The default is "hard". Switching to "easy" will reduce the number of timesteps required to solve each game and is useful for testing or when working with limited compute resources. NOTE : During the evaluation phase (rollout), this will always be overriden to "easy"
+            distribution_mode: easy
+            use_backgrounds: True
+            restrict_themes: False
+            use_monochrome_assets: False
+            hue: False
+            queue_length: 2
+
+        # Discount factor of the MDP.
+        gamma: 0.99
+        # The GAE(lambda) parameter.
+        lambda: 0.95
+        beta: 0.001
+        # The default learning rate.
+        lr: 0.00015
+        lr_schedule: [[0,0.00015],[4000000,0.00015],[4000001, 0.00005]]
+        # Number of SGD iterations in each outer loop (i.e., number of epochs to
+        # execute per train batch).
+        num_sgd_iter: 2
+        # Total SGD batch size across all devices for SGD. This defines the
+        # minibatch size within each epoch.
+        sgd_minibatch_size: 256 # 8 minibatches per epoch
+        # Training batch size, if applicable. Should be >= rollout_fragment_length.
+        # Samples batches will be concatenated together to a batch of this size,
+        # which is then passed to SGD.
+        train_batch_size: 8192 # 256 * 64
+        # Initial coefficient for KL divergence.
+        kl_coeff: 0.0
+        # Target value for KL divergence.
+        kl_target: 0.01
+        # Coefficient of the value function loss. IMPORTANT: you must tune this if
+        # you set vf_share_layers: True.
+        vf_loss_coeff: 0.5
+        vae_loss_coeff: 3
+        # Coefficient of the entropy regularizer.
+        entropy_coeff: 0.006
+        # PPO clip parameter.
+        clip_param: 0.2
+        # Clip param for the value function. Note that this is sensitive to the
+        # scale of the rewards. If your expected V is large, increase this.
+        vf_clip_param: 0.4
+        # If specified, clip the global norm of gradients by this amount.
+        grad_clip: 10
+        # Which observation filter to apply to the observation.
+        observation_filter: NoFilter
+        # Share layers for value function. If you set this to True, it's important
+        # to tune vf_loss_coeff.
+        vf_share_layers: True
+        # Number of steps after which the episode is forced to terminate. Defaults
+        # to `env.spec.max_episode_steps` (if present) for Gym envs.
+        horizon: null
+        # Calculate rewards but don't reset the environment when the horizon is
+        # hit. This allows value estimation and RNN state to span across logical
+        # episodes denoted by horizon. This only has an effect if horizon != inf.
+        soft_horizon: False
+        # Don't set 'done' at the end of the episode. Note that you still need to
+        # set this if soft_horizon=True, unless your env is actually running
+        # forever without returning done=True.
+        no_done_at_end: False
+        normalize_actions: False
+        clip_rewards: False
+        
+        clip_actions: True
+        
+        preprocessor_pref: deepmind
+
+        ignore_worker_failures: False
+        
+        log_sys_usage: True
+
+        use_pytorch: False
+
+        model:
+            custom_model: beta_vae_net_separate
+            custom_options:
+                depths: [32,64,64]
+                vae_depths: [32,64,64]
+                z_dim: 128
+                vae_grad: False
+                vae_norm: True
+                use_vae_features: True
+                use_impala_features: True
+                regu: False
+                dense_regu: True
+
+        num_workers: 6
+        num_envs_per_worker: 8
+        rollout_fragment_length: 256
+        batch_mode: truncate_episodes
+
+        num_cpus_per_worker: 1
+        num_gpus_per_worker: 0.05
+        num_cpus_for_driver: 1
+
+
+        num_gpus: 0.5
+        explore: True
+        
+        exploration_config:
+            type: SoftQ
+            temperature: 1.0
+        
+        evaluation_config:
+            explore: True
+            exploration_config:
+                type: SoftQ
+                temperature: 0.25
+        observation_filter: "NoFilter"
+        synchronize_filters: True
+        compress_observations: False
+        timesteps_per_iteration: 0
+        seed: null
+        
