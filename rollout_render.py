@@ -264,6 +264,10 @@ def create_parser(parser_creator=None):
         "--exploration",
         default=None,
         type=int)
+    parser.add_argument(
+        "--temperature",
+        default=None,
+        type=float)
     return parser
 
 
@@ -313,6 +317,8 @@ def run(args, parser):
         config["env_config"]["distribution_mode"] = args_dict["distribution_mode"]
     if args_dict["exploration"] is not None:
         config["explore"] = args_dict["exploration"]==1
+    if args_dict["temperature"] is not None:
+        config["exploration_config"]["temperature"] = args_dict["temperature"]
 
     print(f"config: {config}")
     # Create the Trainer from config.
