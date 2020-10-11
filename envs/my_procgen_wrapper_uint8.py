@@ -11,9 +11,9 @@ from gym.spaces import Box
 from gym import Wrapper
 from envs.utils import RewardNormalizer
 
-class MyProcgenWrapper(Wrapper):
+class MyProcgenWrapperUINT8(Wrapper):
     def __init__(self, env, queue_length, hue=False, reward_norm=False):
-        super(MyProcgenWrapper, self).__init__(env)
+        super(MyProcgenWrapperUINT8, self).__init__(env)
         self.queue_length = queue_length
         self.hue = hue
         self.frames = deque(maxlen=queue_length)
@@ -33,7 +33,8 @@ class MyProcgenWrapper(Wrapper):
         # print(low[:,:,3])
         # print(low[:,:,-1])
         # print(high)
-        self.observation_space = Box(low=low, high=high, dtype=np.int32)
+        # self.observation_space = Box(low=low, high=high, dtype=np.int32)
+        self.observation_space = Box(low=low, high=high, dtype=np.uint8)
         
 
     def _get_observation(self):
@@ -64,10 +65,10 @@ def create_my_custom_env(config):
     queue_length = config.pop("queue_length", 2)
     reward_norm = config.pop("reward_norm", False)
     env = ProcgenEnvWrapper(config)
-    env = MyProcgenWrapper(env, queue_length, hue, reward_norm)
+    env = MyProcgenWrapperUINT8(env, queue_length, hue, reward_norm)
     return env
 
 
 registry.register_env(
-    "my_procgen_wrapper", create_my_custom_env
+    "my_procgen_wrapper_uint8", create_my_custom_env
 )
