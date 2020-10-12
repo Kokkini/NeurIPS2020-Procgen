@@ -83,7 +83,7 @@ class SubtractNet(TFModelV2):
         subtract_mask = np.zeros([1] + list(self.original_shape))
         subtract_mask[...,3:] = 1
         subtract_part = subtract_mask * obs
-        subtract_part = subtract_part * 2 - 255
+        subtract_part = subtract_part * 2 - 255 + 1   #plus 1 to make the background 0 instead of -1
         obs = obs * (1-subtract_mask) + subtract_part * subtract_mask
 
         obs = tf.image.pad_to_bounding_box(obs,
