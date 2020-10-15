@@ -1,7 +1,7 @@
 procgen-ppo:
     env: my_procgen_wrapper_uint8  # Change this at your own risk :D
     run: MyPPO
-    #disable_evaluation_worker: True
+    disable_evaluation_worker: True
     # Can be replaced by any of the available agents as described at : 
     # https://github.com/ray-project/ray/blob/master/rllib/agents/registry.py#L103
     # 
@@ -64,8 +64,8 @@ procgen-ppo:
         # Discount factor of the MDP.
         gamma: 0.99
         # The GAE(lambda) parameter.
-        lambda: 1.0
-        down_value_weight: 0.1
+        lambda: 0.95
+        down_value_weight: 0.3
         # The default learning rate.
         lr: 0.00015
         lr_schedule: [[0,0.00015],[4000000,0.00015],[4000001, 0.00005]]
