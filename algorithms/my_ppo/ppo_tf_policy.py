@@ -1,9 +1,8 @@
 import logging
 
 import ray
-from ray.rllib.evaluation.postprocessing import compute_advantages, \
-    Postprocessing
-from ray.rllib.policy.sample_batch import SampleBatch
+from .postprocessing import compute_advantages, Postprocessing
+from .sample_batch import SampleBatch
 from ray.rllib.policy.tf_policy import LearningRateSchedule, \
     EntropyCoeffSchedule
 from ray.rllib.policy.tf_policy_template import build_tf_policy
@@ -34,7 +33,8 @@ class PPOLoss:
                  clip_param=0.1,
                  vf_clip_param=0.1,
                  vf_loss_coeff=1.0,
-                 use_gae=True):
+                 use_gae=True,
+                 down_value_weight=None):
         """Constructs the loss for Proximal Policy Objective.
 
         Arguments:
@@ -90,11 +90,18 @@ class PPOLoss:
         self.mean_policy_loss = reduce_mean_valid(-surrogate_loss)
 
         if use_gae:
-            vf_loss1 = tf.square(value_fn - value_targets)
-            vf_clipped = vf_preds + tf.clip_by_value(
-                value_fn - vf_preds, -vf_clip_param, vf_clip_param)
-            vf_loss2 = tf.square(vf_clipped - value_targets)
-            vf_loss = tf.maximum(vf_loss1, vf_loss2)
+            if down_value_weight is None:
+                vf_loss1 = tf.square(value_fn - value_targets)
+                vf_clipped = vf_preds + tf.clip_by_value(
+                    value_fn - vf_preds, -vf_clip_param, vf_clip_param)
+                vf_loss2 = tf.square(vf_clipped - value_targets)
+                vf_loss = tf.maximum(vf_loss1, vf_loss2)
+            else:
+                diff = value_targets - value_fn
+                pos_part = tf.keras.layers.ReLU()(diff)
+                neg_part = tf.keras.layers.ReLU()(-diff)
+                vf_loss = tf.square(pos_part) + down_value_weight * tf.square(neg_part)
+
             self.mean_vf_loss = reduce_mean_valid(vf_loss)
             loss = reduce_mean_valid(
                 -surrogate_loss + cur_kl_coeff * action_kl +
@@ -135,6 +142,7 @@ def ppo_surrogate_loss(policy, model, dist_class, train_batch):
         vf_clip_param=policy.config["vf_clip_param"],
         vf_loss_coeff=policy.config["vf_loss_coeff"],
         use_gae=policy.config["use_gae"],
+        down_value_weight=policy.config["down_value_weight"],
     )
 
     return policy.loss_obj.loss

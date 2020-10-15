@@ -1,7 +1,7 @@
 import logging
 
 from ray.rllib.agents import with_common_config
-from ray.rllib.agents.ppo.ppo_tf_policy import PPOTFPolicy
+from .ppo_tf_policy import PPOTFPolicy
 from ray.rllib.agents.trainer_template import build_trainer
 from ray.rllib.optimizers import SyncSamplesOptimizer, LocalMultiGPUOptimizer
 from ray.rllib.utils import try_import_tf
@@ -48,6 +48,7 @@ DEFAULT_CONFIG = with_common_config({
     "vf_loss_coeff": 1.0,
     # Coefficient of the entropy regularizer.
     "entropy_coeff": 0.0,
+    "down_value_weight": None,
     # Decay schedule for the entropy regularizer.
     "entropy_coeff_schedule": None,
     # PPO clip parameter.
