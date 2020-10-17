@@ -11,6 +11,7 @@ from ray.rllib.utils.tf_ops import make_tf_callable
 from ray.rllib.utils import try_import_tf
 import random
 import numpy as np
+from collections import deque
 
 tf = try_import_tf()
 
@@ -18,24 +19,148 @@ logger = logging.getLogger(__name__)
 
 class EmbeddingBuffer:
     def __init__(self, N):
-        self.embedding = []
-        self.action = []
-        self.q = []    
+        self.embedding = deque()
+        self.action = deque()
+        self.q = deque()
         self.N = N
 
+
 buffer = EmbeddingBuffer(1000000)
+
+# class PPOLoss:
+#     def __init__(self,
+#                  dist_class,
+#                  model,
+#                  value_targets,
+#                  advantages,
+#                  actions,
+#                  prev_logits,
+#                  prev_actions_logp,
+#                  vf_preds,
+#                  embeddings,
+#                  curr_action_dist,
+#                  value_fn,
+#                  cur_kl_coeff,
+#                  valid_mask,
+#                  entropy_coeff=0,
+#                  fast_loss_coeff=1,
+#                  clip_param=0.1,
+#                  vf_clip_param=0.1,
+#                  vf_loss_coeff=1.0,
+#                  use_gae=True,
+#                  down_value_weight=None,
+#                  mini_batch_size=256,
+#                  fast_head_batch_multiplier=10):
+#         """Constructs the loss for Proximal Policy Objective.
+
+#         Arguments:
+#             dist_class: action distribution class for logits.
+#             value_targets (Placeholder): Placeholder for target values; used
+#                 for GAE.
+#             actions (Placeholder): Placeholder for actions taken
+#                 from previous model evaluation.
+#             advantages (Placeholder): Placeholder for calculated advantages
+#                 from previous model evaluation.
+#             prev_logits (Placeholder): Placeholder for logits output from
+#                 previous model evaluation.
+#             prev_actions_logp (Placeholder): Placeholder for action prob output
+#                 from the previous (before update) Model evaluation.
+#             vf_preds (Placeholder): Placeholder for value function output
+#                 from the previous (before update) Model evaluation.
+#             curr_action_dist (ActionDistribution): ActionDistribution
+#                 of the current model.
+#             value_fn (Tensor): Current value function output Tensor.
+#             cur_kl_coeff (Variable): Variable holding the current PPO KL
+#                 coefficient.
+#             valid_mask (Optional[tf.Tensor]): An optional bool mask of valid
+#                 input elements (for max-len padded sequences (RNNs)).
+#             entropy_coeff (float): Coefficient of the entropy regularizer.
+#             clip_param (float): Clip parameter
+#             vf_clip_param (float): Clip parameter for the value function
+#             vf_loss_coeff (float): Coefficient of the value function loss
+#             use_gae (bool): If true, use the Generalized Advantage Estimator.
+#         """
+#         if valid_mask is not None:
+
+#             def reduce_mean_valid(t):
+#                 return tf.reduce_mean(tf.boolean_mask(t, valid_mask))
+
+#         else:
+
+#             def reduce_mean_valid(t):
+#                 return tf.reduce_mean(t)
+
+#         # Make loss functions.
+
+#         slow_loss = reduce_mean_valid(tf.square(value_fn - value_targets))
+#         fast_loss = 0
+#         fast_head_batch_size = fast_head_batch_multiplier * mini_batch_size
+#         if len(buffer.action) > max(100000, fast_head_batch_size):
+#             sampled_ix = np.random.choice(len(buffer.action), fast_head_batch_size, replace=False)
+#             sampled_embedding = [buffer.embdding[j] for j in sampled_ix] + embeddings
+#             sampled_action = [buffer.action[j] for j in sampled_ix] + actions
+#             sampled_q = [buffer.q[j] for j in sampled_ix] + value_targets
+
+#             fast_head_out = self.fast_head_model(tf.convert_to_tensor(sampled_embedding))
+#             fast_head_value = tf.one_hot(tf.convert_to_tensor(sampled_action), tf.shape(fast_head_out)[-1]) * fast_head_out
+#             fast_loss =  reduce_mean_valid(tf.square(fast_head_out - tf.convert_to_tensor(sampled_q)))
+
+#         buffer.q.extend(value_targets)
+#         buffer.action.extend(actions)
+#         buffer.embedding.extend(embeddings)
+        
+        
+#         for j in range(len(buffer.embedding) - buffer.N):
+#             buffer.embedding.popleft()
+#             buffer.q.popleft()
+#             buffer.action.popleft()
+#         assert len(buffer.q) == len(buffer.action) == len(buffer.embedding)
+
+#         self.loss = slow_loss + fast_loss_coeff * fast_loss
+
+
+# def ppo_surrogate_loss(policy, model, dist_class, train_batch):
+#     logits, state = model.from_batch(train_batch)
+#     action_dist = dist_class(logits, model)
+
+#     mask = None
+#     if state:
+#         max_seq_len = tf.reduce_max(train_batch["seq_lens"])
+#         mask = tf.sequence_mask(train_batch["seq_lens"], max_seq_len)
+#         mask = tf.reshape(mask, [-1])
+
+#     policy.loss_obj = PPOLoss(
+#         dist_class,
+#         model,
+#         train_batch[Postprocessing.VALUE_TARGETS],
+#         train_batch[Postprocessing.ADVANTAGES],
+#         train_batch[SampleBatch.ACTIONS],
+#         train_batch[SampleBatch.ACTION_DIST_INPUTS],
+#         train_batch[SampleBatch.ACTION_LOGP],
+#         train_batch[SampleBatch.VF_PREDS],
+#         train_batch[SampleBatch.EMBEDDING],
+#         action_dist,
+#         model.value_function(),
+#         policy.kl_coeff,
+#         mask,
+#         entropy_coeff=policy.entropy_coeff,
+#         fast_loss_coeff=policy.config["fast_loss_coeff"],
+#         clip_param=policy.config["clip_param"],
+#         vf_clip_param=policy.config["vf_clip_param"],
+#         vf_loss_coeff=policy.config["vf_loss_coeff"],
+#         use_gae=policy.config["use_gae"],
+#         down_value_weight=policy.config["down_value_weight"],
+#         mini_batch_size=policy.config["sgd_minibatch_size"],
+#         fast_head_batch_multiplier=policy.config["fast_head_batch_multiplier"],
+#     )
+
+#     return policy.loss_obj.loss
 
 class PPOLoss:
     def __init__(self,
                  dist_class,
                  model,
-                 value_targets,
-                 advantages,
-                 actions,
-                 prev_logits,
-                 prev_actions_logp,
-                 vf_preds,
-                 embeddings,
+                 train_batch,
                  curr_action_dist,
                  value_fn,
                  cur_kl_coeff,
@@ -49,83 +174,20 @@ class PPOLoss:
                  down_value_weight=None,
                  mini_batch_size=256,
                  fast_head_batch_multiplier=10):
-        """Constructs the loss for Proximal Policy Objective.
 
-        Arguments:
-            dist_class: action distribution class for logits.
-            value_targets (Placeholder): Placeholder for target values; used
-                for GAE.
-            actions (Placeholder): Placeholder for actions taken
-                from previous model evaluation.
-            advantages (Placeholder): Placeholder for calculated advantages
-                from previous model evaluation.
-            prev_logits (Placeholder): Placeholder for logits output from
-                previous model evaluation.
-            prev_actions_logp (Placeholder): Placeholder for action prob output
-                from the previous (before update) Model evaluation.
-            vf_preds (Placeholder): Placeholder for value function output
-                from the previous (before update) Model evaluation.
-            curr_action_dist (ActionDistribution): ActionDistribution
-                of the current model.
-            value_fn (Tensor): Current value function output Tensor.
-            cur_kl_coeff (Variable): Variable holding the current PPO KL
-                coefficient.
-            valid_mask (Optional[tf.Tensor]): An optional bool mask of valid
-                input elements (for max-len padded sequences (RNNs)).
-            entropy_coeff (float): Coefficient of the entropy regularizer.
-            clip_param (float): Clip parameter
-            vf_clip_param (float): Clip parameter for the value function
-            vf_loss_coeff (float): Coefficient of the value function loss
-            use_gae (bool): If true, use the Generalized Advantage Estimator.
-        """
-        if valid_mask is not None:
+        self.loss = tf.cond(train_batch[Postprocessing.FROM_BUFFER],
+                            lambda : fast_loss_coeff * self.get_fast_loss(train_batch[SampleBatch.EMBEDDING], train_batch[SampleBatch.ACTIONS], train_batch[Postprocessing.VALUE_TARGETS]),
+                            lambda : self.get_slow_loss(value_fn, train_batch[Postprocessing.VALUE_TARGETS]))
 
-            def reduce_mean_valid(t):
-                return tf.reduce_mean(tf.boolean_mask(t, valid_mask))
+    def get_slow_loss(self, value_fn, value_targets):
+        return tf.reduce_mean(tf.square(value_fn - value_targets))
 
-        else:
-
-            def reduce_mean_valid(t):
-                return tf.reduce_mean(t)
-
-        prev_dist = dist_class(prev_logits, model)
-        # Make loss functions.
-        logp_ratio = tf.exp(curr_action_dist.logp(actions) - prev_actions_logp)
-        action_kl = prev_dist.kl(curr_action_dist)
-        self.mean_kl = reduce_mean_valid(action_kl)
-
-        curr_entropy = curr_action_dist.entropy()
-        self.mean_entropy = reduce_mean_valid(curr_entropy)
-
-        surrogate_loss = tf.minimum(
-            advantages * logp_ratio,
-            advantages * tf.clip_by_value(logp_ratio, 1 - clip_param,
-                                          1 + clip_param))
-
-        slow_loss = reduce_mean_valid(tf.square(value_fn - value_targets))
-        fast_loss = 0
-        fast_head_batch_size = fast_head_batch_multiplier * mini_batch_size
-        if len(buffer.action) > max(100000, fast_head_batch_size):
-            sampled_ix = np.random.choice(len(buffer.action), fast_head_batch_size, replace=False)
-            sampled_embedding = [buffer.embdding[j] for j in sampled_ix] + embeddings
-            sampled_action = [buffer.action[j] for j in sampled_ix] + actions
-            sampled_q = [buffer.q[j] for j in sampled_ix] + value_targets
-
-            fast_head_out = self.fast_head_model(tf.convert_to_tensor(sampled_embedding))
-            fast_head_value = tf.one_hot(tf.convert_to_tensor(sampled_action), tf.shape(fast_head_out)[-1]) * fast_head_out
-            fast_loss =  reduce_mean_valid(tf.square(fast_head_out - tf.convert_to_tensor(sampled_q)))
-
-        buffer.embedding.extend(embeddings)
-        buffer.q.extend(value_targets)
-        buffer.action.extend(actions)
+    def get_fast_loss(self, embeddings, actions, value_targets):
+        fast_head_out = self.fast_head_model(embeddings)
+        fast_head_value = tf.one_hot(actions, tf.shape(fast_head_out)[-1]) * fast_head_out
+        fast_loss = tf.reduce_mean(tf.square(fast_head_out - value_targets))
+        return fast_loss
         
-        for j in range(len(buffer.embedding) - buffer.N):
-            buffer.embedding.popleft()
-            buffer.q.popleft()
-            buffer.action.popleft()
-        assert len(buffer.q) == len(buffer.action) == len(buffer.embedding)
-
-        self.loss = slow_loss + fast_loss_coeff * fast_loss
 
 
 def ppo_surrogate_loss(policy, model, dist_class, train_batch):
@@ -141,13 +203,7 @@ def ppo_surrogate_loss(policy, model, dist_class, train_batch):
     policy.loss_obj = PPOLoss(
         dist_class,
         model,
-        train_batch[Postprocessing.VALUE_TARGETS],
-        train_batch[Postprocessing.ADVANTAGES],
-        train_batch[SampleBatch.ACTIONS],
-        train_batch[SampleBatch.ACTION_DIST_INPUTS],
-        train_batch[SampleBatch.ACTION_LOGP],
-        train_batch[SampleBatch.VF_PREDS],
-        train_batch[SampleBatch.EMBEDDING],
+        train_batch,
         action_dist,
         model.value_function(),
         policy.kl_coeff,
@@ -164,7 +220,6 @@ def ppo_surrogate_loss(policy, model, dist_class, train_batch):
     )
 
     return policy.loss_obj.loss
-
 
 def kl_and_loss_stats(policy, train_batch):
     return {

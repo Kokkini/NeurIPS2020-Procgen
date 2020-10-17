@@ -13,6 +13,7 @@ class Postprocessing:
 
     ADVANTAGES = "advantages"
     VALUE_TARGETS = "value_targets"
+    FROM_BUFFER = "from_buffer"
 
 
 @DeveloperAPI
@@ -77,6 +78,8 @@ def compute_advantages(rollout,
 
     traj[Postprocessing.ADVANTAGES] = traj[
         Postprocessing.ADVANTAGES].copy().astype(np.float32)
+
+    traj[Postprocessing.FROM_BUFFER] = [False] * trajsize
 
     assert all(val.shape[0] == trajsize for val in traj.values()), \
         "Rollout stacked incorrectly!"

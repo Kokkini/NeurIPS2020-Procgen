@@ -5,6 +5,14 @@ from .ppo_tf_policy import PPOTFPolicy
 from ray.rllib.agents.trainer_template import build_trainer
 from ray.rllib.optimizers import SyncSamplesOptimizer, LocalMultiGPUOptimizer
 from ray.rllib.utils import try_import_tf
+from ray.rllib.execution.rollout_ops import ParallelRollouts, ConcatBatches
+from ray.rllib.execution.train_ops import TrainOneStep
+from ray.rllib.execution.metric_ops import StandardMetricsReporting
+from .replay_ops import Replay, StoreToReplayBuffer
+from ray.rllib.execution.concurrency_ops import Concurrently
+from ray.rllib.execution.replay_buffer import LocalReplayBuffer
+
+
 
 tf = try_import_tf()
 
@@ -21,6 +29,9 @@ DEFAULT_CONFIG = with_common_config({
     # If true, use the Generalized Advantage Estimator (GAE)
     # with a value function, see https://arxiv.org/pdf/1506.02438.pdf.
     "use_gae": False,
+    "learning_starts": 10000,
+    "buffer_size": 20000,
+    "replay_batch_size": 2000,
     # The GAE(lambda) parameter.
     "lambda": 1.0,
     # Initial coefficient for KL divergence.
@@ -164,10 +175,6 @@ def validate_config(config):
         raise ValueError(
             "Minibatch size {} must be <= train batch size {}.".format(
                 config["sgd_minibatch_size"], config["train_batch_size"]))
-    if config["batch_mode"] == "truncate_episodes" and not config["use_gae"]:
-        raise ValueError(
-            "Episode truncation is not supported without a value "
-            "function. Consider setting batch_mode=complete_episodes.")
     if config["multiagent"]["policies"] and not config["simple_optimizer"]:
         logger.info(
             "In multi-agent mode, policies will be optimized sequentially "
@@ -180,6 +187,38 @@ def validate_config(config):
     elif config["use_pytorch"] or (tf and tf.executing_eagerly()):
         config["simple_optimizer"] = True  # multi-gpu not supported
 
+def execution_plan(workers, config):
+    local_replay_buffer = LocalReplayBuffer(
+        num_shards=1,
+        learning_starts=config["learning_starts"],
+        buffer_size=config["buffer_size"],
+        replay_batch_size=config["replay_batch_size"])
+
+    # Collects experiences in parallel from multiple RolloutWorker actors.
+    rollouts = ParallelRollouts(workers, mode="bulk_sync")
+
+    # Combine experiences batches until we hit `train_batch_size` in size.
+    # Then, train the policy on those experiences and update the workers.
+    slow_train_op = rollouts \
+        .combine(ConcatBatches(
+            min_batch_size=config["train_batch_size"])) \
+        .for_each(TrainOneStep(workers))
+
+    # (1) Generate rollouts and store them in our local replay buffer.
+    store_op = rollouts.for_each(
+        StoreToReplayBuffer(local_buffer=local_replay_buffer))
+
+    # (2) Read and train on experiences from the replay buffer.
+    replay_op = Replay(local_buffer=local_replay_buffer) \
+        .for_each(TrainOneStep(workers))
+
+    # Alternate deterministically
+    train_op = Concurrently(
+        [store_op, slow_train_op, replay_op], mode="round_robin", output_indexes=[1])
+
+    # Add on the standard episode reward, etc. metrics reporting. This returns
+    # a LocalIterator[metrics_dict] representing metrics for each train step.
+    return StandardMetricsReporting(train_op, workers, config)
 
 def get_policy_class(config):
     if config["use_pytorch"]:
@@ -197,4 +236,5 @@ FastHeadTrainer = build_trainer(
     make_policy_optimizer=choose_policy_optimizer,
     validate_config=validate_config,
     after_optimizer_step=update_kl,
-    after_train_result=warn_about_bad_reward_scales)
+    after_train_result=warn_about_bad_reward_scales,
+    execution_plan=execution_plan)

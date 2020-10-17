@@ -112,11 +112,11 @@ class FastHeadNet(TFModelV2):
                                                       maxval=self.pad_shape[1] - 64,
                                                       dtype=tf.int64),
                                     self.pad_shape[0], self.pad_shape[1])
-        logits, self.embedding = self.base_model(obs)
-        return logits, state
+        self.logits, self.embedding = self.base_model(obs)
+        return self.logits, state
 
     def value_function(self):
-        return tf.reduce_max(self.logits, axis=1, keep_dims=True)
+        return tf.reduce_max(self.logits, axis=1)
 
 
 # Register model in ModelCatalog
