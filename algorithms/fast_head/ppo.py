@@ -10,7 +10,7 @@ from ray.rllib.execution.train_ops import TrainOneStep
 from ray.rllib.execution.metric_ops import StandardMetricsReporting
 from .replay_ops import Replay, StoreToReplayBuffer
 from ray.rllib.execution.concurrency_ops import Concurrently
-from ray.rllib.execution.replay_buffer import LocalReplayBuffer
+from ray.rllib.optimizers.async_replay_optimizer import LocalReplayBuffer
 
 
 

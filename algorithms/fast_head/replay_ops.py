@@ -7,6 +7,7 @@ from ray.rllib.optimizers.async_replay_optimizer import LocalReplayBuffer
 from ray.rllib.execution.common import SampleBatchType
 from .sample_batch import SampleBatch
 from .postprocessing import Postprocessing
+import numpy as np
 
 
 class StoreToReplayBuffer:
@@ -48,7 +49,7 @@ class StoreToReplayBuffer:
         new_batch[SampleBatch.EMBEDDING] = batch[SampleBatch.EMBEDDING]
         new_batch[SampleBatch.ACTIONS] = batch[SampleBatch.ACTIONS]
         new_batch[Postprocessing.VALUE_TARGETS] = batch[Postprocessing.VALUE_TARGETS]
-        new_batch[Postprocessing.FROM_BUFFER] = [True] * batch_size
+        new_batch[Postprocessing.FROM_BUFFER] = np.array([True] * batch_size)
         new_batch = SampleBatch(new_batch)
         if self.local_actor:
             self.local_actor.add_batch(new_batch)
