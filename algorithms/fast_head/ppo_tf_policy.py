@@ -161,8 +161,6 @@ class PPOLoss:
                  dist_class,
                  model,
                  train_batch,
-                 curr_action_dist,
-                 value_fn,
                  cur_kl_coeff,
                  valid_mask,
                  entropy_coeff=0,
@@ -175,15 +173,22 @@ class PPOLoss:
                  mini_batch_size=256,
                  fast_head_batch_multiplier=10):
 
-        self.loss = tf.cond(train_batch[Postprocessing.FROM_BUFFER],
-                            lambda : fast_loss_coeff * self.get_fast_loss(train_batch[SampleBatch.EMBEDDING], train_batch[SampleBatch.ACTIONS], train_batch[Postprocessing.VALUE_TARGETS]),
-                            lambda : self.get_slow_loss(value_fn, train_batch[Postprocessing.VALUE_TARGETS]))
+        self.loss = tf.cond(tf.reduce_all(train_batch[Postprocessing.FROM_BUFFER]),
+                            lambda : fast_loss_coeff * self.get_fast_loss(model, train_batch),
+                            lambda : self.get_slow_loss(model, train_batch))
 
-    def get_slow_loss(self, value_fn, value_targets):
+    def get_slow_loss(self, model, train_batch):
+        logits, state = model.from_batch(train_batch)
+        value_fn = model.value_function()
+        value_targets = train_batch[Postprocessing.VALUE_TARGETS]
         return tf.reduce_mean(tf.square(value_fn - value_targets))
 
-    def get_fast_loss(self, embeddings, actions, value_targets):
-        fast_head_out = self.fast_head_model(embeddings)
+    def get_fast_loss(self, model, train_batch):
+        # fast_head_out = self.model.fast_head_model(embeddings)
+        embeddings = train_batch[SampleBatch.EMBEDDING]
+        fast_head_out = model.fast_head_model(embeddings)
+        actions = train_batch[SampleBatch.ACTIONS]
+        value_targets = train_batch[Postprocessing.VALUE_TARGETS]
         fast_head_value = tf.one_hot(actions, tf.shape(fast_head_out)[-1]) * fast_head_out
         fast_loss = tf.reduce_mean(tf.square(fast_head_out - value_targets))
         return fast_loss
@@ -191,21 +196,14 @@ class PPOLoss:
 
 
 def ppo_surrogate_loss(policy, model, dist_class, train_batch):
-    logits, state = model.from_batch(train_batch)
-    action_dist = dist_class(logits, model)
+    
 
     mask = None
-    if state:
-        max_seq_len = tf.reduce_max(train_batch["seq_lens"])
-        mask = tf.sequence_mask(train_batch["seq_lens"], max_seq_len)
-        mask = tf.reshape(mask, [-1])
 
     policy.loss_obj = PPOLoss(
         dist_class,
         model,
         train_batch,
-        action_dist,
-        model.value_function(),
         policy.kl_coeff,
         mask,
         entropy_coeff=policy.entropy_coeff,

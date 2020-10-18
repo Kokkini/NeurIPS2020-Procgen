@@ -10,7 +10,7 @@ from ray.rllib.execution.train_ops import TrainOneStep
 from ray.rllib.execution.metric_ops import StandardMetricsReporting
 from .replay_ops import Replay, StoreToReplayBuffer
 from ray.rllib.execution.concurrency_ops import Concurrently
-from ray.rllib.optimizers.async_replay_optimizer import LocalReplayBuffer
+from .async_replay_optimizer import LocalReplayBuffer
 
 
 
@@ -235,6 +235,6 @@ FastHeadTrainer = build_trainer(
     get_policy_class=get_policy_class,
     make_policy_optimizer=choose_policy_optimizer,
     validate_config=validate_config,
-    after_optimizer_step=update_kl,
-    after_train_result=warn_about_bad_reward_scales,
+    # after_optimizer_step=update_kl,
+    # after_train_result=warn_about_bad_reward_scales,
     execution_plan=execution_plan)

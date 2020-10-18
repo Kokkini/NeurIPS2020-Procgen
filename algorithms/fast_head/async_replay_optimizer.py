@@ -3,7 +3,7 @@ import random
 
 from ray.util.iter import from_actors, LocalIterator, _NextValueNotReady
 from ray.util.iter_metrics import SharedMetrics
-from .async_replay_optimizer import LocalReplayBuffer
+from ray.rllib.optimizers.async_replay_optimizer import LocalReplayBuffer
 from ray.rllib.execution.common import SampleBatchType
 from .sample_batch import SampleBatch
 from .postprocessing import Postprocessing
@@ -95,50 +95,7 @@ def Replay(*,
     def gen_replay(_):
         while True:
             item = local_buffer.replay()
-            if item is None:
-                yield _NextValueNotReady()
-            else:
-                yield item
-
-    return LocalIterator(gen_replay, SharedMetrics())
-
-
-def ReplayHeavyTail(*,
-           local_buffer: LocalReplayBuffer = None,
-           actors: List["ActorHandle"] = None,
-           async_queue_depth=4):
-    """Replay experiences from the given buffer or actors.
-
-    This should be combined with the StoreToReplayActors operation using the
-    Concurrently() operator.
-
-    Arguments:
-        local_buffer (LocalReplayBuffer): Local buffer to use. Only one of this
-            and replay_actors can be specified.
-        actors (list): List of replay actors. Only one of this and
-            local_buffer can be specified.
-        async_queue_depth (int): In async mode, the max number of async
-            requests in flight per actor.
-
-    Examples:
-        >>> actors = [ReplayActor.remote() for _ in range(4)]
-        >>> replay_op = Replay(actors=actors)
-        >>> next(replay_op)
-        SampleBatch(...)
-    """
-
-    if bool(local_buffer) == bool(actors):
-        raise ValueError(
-            "Exactly one of local_buffer and replay_actors must be given.")
-
-    if actors:
-        replay = from_actors(actors)
-        return replay.gather_async(async_queue_depth=async_queue_depth).filter(
-            lambda x: x is not None)
-
-    def gen_replay(_):
-        while True:
-            item = local_buffer.replay_heavy_tail()
+            print(item)
             if item is None:
                 yield _NextValueNotReady()
             else:
