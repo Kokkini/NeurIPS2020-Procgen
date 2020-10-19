@@ -693,6 +693,8 @@ class TFPolicy(Policy):
             for k, ph in self._loss_inputs:
                 feed_dict[ph] = batch[k]
         else:
+            batch_size = len(batch[SampleBatch.ACTIONS])
+            feed_dict[self._loss_input_dict[SampleBatch.CUR_OBS]] = np.zeros(shape=(batch_size, 64, 64, 3))
             for k in [SampleBatch.EMBEDDING, SampleBatch.ACTIONS, Postprocessing.VALUE_TARGETS, Postprocessing.FROM_BUFFER]:
                 feed_dict[self._loss_input_dict[k]] = batch[k]
             

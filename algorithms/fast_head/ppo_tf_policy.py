@@ -188,8 +188,8 @@ class PPOLoss:
         fast_head_out = model.fast_head_model(embeddings)
         actions = train_batch[SampleBatch.ACTIONS]
         value_targets = train_batch[Postprocessing.VALUE_TARGETS]
-        fast_head_value = tf.one_hot(actions, tf.shape(fast_head_out)[-1]) * fast_head_out
-        fast_loss = tf.reduce_mean(tf.square(fast_head_out - value_targets))
+        fast_head_value = tf.reduce_sum(tf.one_hot(actions, tf.shape(fast_head_out)[-1]) * fast_head_out, axis=1)
+        fast_loss = tf.reduce_mean(tf.square(fast_head_value - value_targets))
         return fast_loss
         
 
@@ -225,9 +225,9 @@ def kl_and_loss_stats(policy, train_batch):
         "total_loss": policy.loss_obj.loss,
         # "policy_loss": policy.loss_obj.mean_policy_loss,
         # "vf_loss": policy.loss_obj.mean_vf_loss,
-        "vf_explained_var": explained_variance(
-            train_batch[Postprocessing.VALUE_TARGETS],
-            policy.model.value_function()),
+        # "vf_explained_var": explained_variance(
+        #     train_batch[Postprocessing.VALUE_TARGETS],
+        #     policy.model.value_function()),
         # "kl": policy.loss_obj.mean_kl,
         # "entropy": policy.loss_obj.mean_entropy,
         # "entropy_coeff": tf.cast(policy.entropy_coeff, tf.float64),
