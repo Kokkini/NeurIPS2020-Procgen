@@ -418,6 +418,11 @@ class LocalBatchReplayBuffer(LocalReplayBuffer):
             return None
         return random.choice(self.buffer)
 
+    def replay_heavy_tail(self):
+        if self.num_added < self.replay_starts:
+            return None
+        return self.buffer[-1]
+
     def update_priorities(self, prio_dict):
         pass
 
