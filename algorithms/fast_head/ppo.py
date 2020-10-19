@@ -212,7 +212,7 @@ def execution_plan(workers, config):
         .combine(ConcatBatches(
             min_batch_size=config["train_batch_size"])) \
         .for_each(StoreToReplayBuffer(local_buffer=local_replay_buffer)) \
-        .for_each(TrainOneStep(workers))
+        .for_each(TrainOneStep(workers, num_sgd_iter = 2, sgd_minibatch_size = 256))
         
 
     # (1) Generate rollouts and store them in our local replay buffer.
@@ -221,7 +221,7 @@ def execution_plan(workers, config):
 
     # (2) Read and train on experiences from the replay buffer.
     replay_op = Replay(local_buffer=local_replay_buffer) \
-        .for_each(TrainOneStep(workers))
+        .for_each(TrainOneStep(workers, num_sgd_iter = 2, sgd_minibatch_size = 1024))
 
     # Alternate deterministically
     train_op = Concurrently(

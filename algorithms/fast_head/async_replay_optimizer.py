@@ -16,7 +16,7 @@ from ray.exceptions import RayError
 from ray.util.iter import ParallelIteratorWorker
 from ray.rllib.evaluation.metrics import get_learner_stats
 from ray.rllib.policy.policy import LEARNER_STATS_KEY
-from ray.rllib.policy.sample_batch import SampleBatch, DEFAULT_POLICY_ID, \
+from .sample_batch import SampleBatch, DEFAULT_POLICY_ID, \
     MultiAgentBatch
 from ray.rllib.optimizers.policy_optimizer import PolicyOptimizer
 from ray.rllib.optimizers.replay_buffer import PrioritizedReplayBuffer

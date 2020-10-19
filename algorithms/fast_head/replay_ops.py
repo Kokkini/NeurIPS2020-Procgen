@@ -4,7 +4,7 @@ import random
 from ray.util.iter import from_actors, LocalIterator, _NextValueNotReady
 from ray.util.iter_metrics import SharedMetrics
 from .async_replay_optimizer import LocalReplayBuffer
-from ray.rllib.execution.common import SampleBatchType
+from .common import SampleBatchType
 from .sample_batch import SampleBatch
 from .postprocessing import Postprocessing
 import numpy as np

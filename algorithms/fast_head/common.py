@@ -1,7 +1,7 @@
 from typing import Union
 
 from ray.util.iter import LocalIterator
-from ray.rllib.policy.sample_batch import SampleBatch, MultiAgentBatch
+from .sample_batch import SampleBatch, MultiAgentBatch
 
 # Counters for training progress (keys for metrics.counters).
 STEPS_SAMPLED_COUNTER = "num_steps_sampled"
@@ -31,7 +31,7 @@ SampleBatchType = Union[SampleBatch, MultiAgentBatch]
 # Asserts that an object is a type of SampleBatch.
 def _check_sample_batch_type(batch):
     if not isinstance(batch, SampleBatchType.__args__):
-        raise ValueError("Expected either SampleBatch or MultiAgentBatch, "
+        raise ValueError(f"Expected {SampleBatchType.__args__}, "
                          "got {}: {}".format(type(batch), batch))
 
 
