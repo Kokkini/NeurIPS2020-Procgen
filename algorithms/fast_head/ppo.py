@@ -34,6 +34,7 @@ DEFAULT_CONFIG = with_common_config({
     "learning_starts": 100000,
     "buffer_size": 1000000,
     "replay_batch_size": 50000,
+    "train_embedding": True,
     # The GAE(lambda) parameter.
     "lambda": 1.0,
     # Initial coefficient for KL divergence.
@@ -217,11 +218,17 @@ def execution_plan(workers, config):
 
     # Combine experiences batches until we hit `train_batch_size` in size.
     # Then, train the policy on those experiences and update the workers.
-    slow_train_op = rollouts \
-        .combine(ConcatBatches(
-            min_batch_size=config["train_batch_size"])) \
-        .for_each(StoreToReplayBuffer(local_buffer=local_replay_buffer)) \
-        .for_each(TrainOneStep(workers, num_sgd_iter = config["num_sgd_iter"], sgd_minibatch_size = config["sgd_minibatch_size"]))
+    if config["train_embedding"]:
+        slow_train_op = rollouts \
+            .combine(ConcatBatches(
+                min_batch_size=config["train_batch_size"])) \
+            .for_each(StoreToReplayBuffer(local_buffer=local_replay_buffer)) \
+            .for_each(TrainOneStep(workers, num_sgd_iter = config["num_sgd_iter"], sgd_minibatch_size = config["sgd_minibatch_size"]))
+    else:
+        slow_train_op = rollouts \
+            .combine(ConcatBatches(
+                min_batch_size=config["train_batch_size"])) \
+            .for_each(StoreToReplayBuffer(local_buffer=local_replay_buffer))
         
 
     # (1) Generate rollouts and store them in our local replay buffer.

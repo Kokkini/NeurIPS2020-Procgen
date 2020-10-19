@@ -71,6 +71,7 @@ procgen-ppo:
         sgd_minibatch_size_replay: 1024
         #replay_per_collect: 5
         replay_batch_size: 1024
+        train_embedding: True
         
         # Discount factor of the MDP.
         gamma: 0.99
