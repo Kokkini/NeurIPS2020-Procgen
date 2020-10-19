@@ -168,9 +168,7 @@ class PPOLoss:
                  vf_clip_param=0.1,
                  vf_loss_coeff=1.0,
                  use_gae=True,
-                 down_value_weight=None,
-                 mini_batch_size=256,
-                 fast_head_batch_multiplier=10):
+                 down_value_weight=None):
 
         self.loss = tf.cond(tf.reduce_all(train_batch[Postprocessing.FROM_BUFFER]),
                             lambda : fast_loss_coeff * self.get_fast_loss(model, train_batch),
@@ -211,10 +209,7 @@ def ppo_surrogate_loss(policy, model, dist_class, train_batch):
         vf_clip_param=policy.config["vf_clip_param"],
         vf_loss_coeff=policy.config["vf_loss_coeff"],
         use_gae=policy.config["use_gae"],
-        down_value_weight=policy.config["down_value_weight"],
-        mini_batch_size=policy.config["sgd_minibatch_size"],
-        fast_head_batch_multiplier=policy.config["fast_head_batch_multiplier"],
-    )
+        down_value_weight=policy.config["down_value_weight"])
 
     return policy.loss_obj.loss
 

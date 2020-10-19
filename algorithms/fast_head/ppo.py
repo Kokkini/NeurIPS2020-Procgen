@@ -21,8 +21,10 @@ logger = logging.getLogger(__name__)
 # yapf: disable
 # __sphinx_doc_begin__
 DEFAULT_CONFIG = with_common_config({
-    "fast_head_batch_multiplier": 10,
     "fast_loss_coeff": 10,
+    "num_sgd_iter_replay": 1,
+    "sgd_minibatch_size_replay": 1024,
+    "replay_per_collect": 10,
     # Should use a critic as a baseline (otherwise don't use value baseline;
     # required for using GAE).
     "use_critic": True,
@@ -31,7 +33,7 @@ DEFAULT_CONFIG = with_common_config({
     "use_gae": False,
     "learning_starts": 10000,
     "buffer_size": 20000,
-    "replay_batch_size": 2000,
+    # "replay_batch_size": 2000,
     # The GAE(lambda) parameter.
     "lambda": 1.0,
     # Initial coefficient for KL divergence.
@@ -212,7 +214,7 @@ def execution_plan(workers, config):
         .combine(ConcatBatches(
             min_batch_size=config["train_batch_size"])) \
         .for_each(StoreToReplayBuffer(local_buffer=local_replay_buffer)) \
-        .for_each(TrainOneStep(workers, num_sgd_iter = 2, sgd_minibatch_size = 256))
+        .for_each(TrainOneStep(workers, num_sgd_iter = config["num_sgd_iter"], sgd_minibatch_size = config["sgd_minibatch_size"]))
         
 
     # (1) Generate rollouts and store them in our local replay buffer.
@@ -221,11 +223,11 @@ def execution_plan(workers, config):
 
     # (2) Read and train on experiences from the replay buffer.
     replay_op = Replay(local_buffer=local_replay_buffer) \
-        .for_each(TrainOneStep(workers, num_sgd_iter = 2, sgd_minibatch_size = 1024))
+        .for_each(TrainOneStep(workers, num_sgd_iter = config["num_sgd_iter_replay"], sgd_minibatch_size = config["sgd_minibatch_size_replay"]))
 
     # Alternate deterministically
     train_op = Concurrently(
-        [replay_op, slow_train_op], mode="round_robin", output_indexes=[1])
+        [slow_train_op, replay_op], mode="round_robin", output_indexes=[0], round_robin_weights=[1, config["replay_per_collect"]])
 
     # Add on the standard episode reward, etc. metrics reporting. This returns
     # a LocalIterator[metrics_dict] representing metrics for each train step.

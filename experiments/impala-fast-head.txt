@@ -61,13 +61,15 @@ procgen-ppo:
         # === Environment Settings ===
         ################################################
         ################################################
-        fast_head_batch_multiplier: 10
         fast_loss_coeff: 10
         use_gae: False
         use_critic: True
-        learning_starts: 10000
-        buffer_size: 20000
-        replay_batch_size: 2000
+        learning_starts: 100000
+        buffer_size: 1000000
+        
+        num_sgd_iter_replay: 1,
+        sgd_minibatch_size_replay: 1024
+        replay_per_collect: 10
         
         # Discount factor of the MDP.
         gamma: 0.99
@@ -289,16 +291,16 @@ procgen-ppo:
             # EpsilonGreedy)
             type: EpsilonGreedy
             initial_epsilon: 1.0
-            final_epsilon: 0.02
-            epsilon_timesteps: 100000
+            final_epsilon: 0.05
+            epsilon_timesteps: 1000000
 
         
         evaluation_config:
             explore: True
             exploration_config:
                 type: EpsilonGreedy
-                initial_epsilon: 0.02
-                final_epsilon: 0.02
+                initial_epsilon: 0.05
+                final_epsilon: 0.05
                 epsilon_timesteps: 10
         ################################################
         ################################################
