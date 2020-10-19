@@ -1,4 +1,4 @@
-from ray.rllib.policy.dynamic_tf_policy import DynamicTFPolicy
+from .dynamic_tf_policy import DynamicTFPolicy
 from ray.rllib.policy import eager_tf_policy
 from ray.rllib.policy.policy import Policy, LEARNER_STATS_KEY
 from .tf_policy import TFPolicy
