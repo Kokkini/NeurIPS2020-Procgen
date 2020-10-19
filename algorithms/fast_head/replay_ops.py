@@ -56,7 +56,7 @@ class StoreToReplayBuffer:
         else:
             actor = random.choice(self.replay_actors)
             actor.add_batch.remote(new_batch)
-        return new_batch
+        return batch
 
 
 def Replay(*,

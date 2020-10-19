@@ -6,11 +6,11 @@ from ray.rllib.agents.trainer_template import build_trainer
 from ray.rllib.optimizers import SyncSamplesOptimizer, LocalMultiGPUOptimizer
 from ray.rllib.utils import try_import_tf
 from ray.rllib.execution.rollout_ops import ParallelRollouts, ConcatBatches
-from ray.rllib.execution.train_ops import TrainOneStep
+from .train_ops import TrainOneStep
 from ray.rllib.execution.metric_ops import StandardMetricsReporting
 from .replay_ops import Replay, StoreToReplayBuffer
 from ray.rllib.execution.concurrency_ops import Concurrently
-from .async_replay_optimizer import LocalReplayBuffer
+from .async_replay_optimizer import LocalReplayBuffer, LocalBatchReplayBuffer
 
 
 
@@ -85,7 +85,8 @@ DEFAULT_CONFIG = with_common_config({
     # Set this to True for debugging on non-GPU machines (set `num_gpus` > 0).
     "_fake_gpus": False,
     # Use PyTorch as framework?
-    "use_pytorch": False
+    "use_pytorch": False,
+    "use_exec_api": True,
 })
 # __sphinx_doc_end__
 # yapf: enable
@@ -188,11 +189,19 @@ def validate_config(config):
         config["simple_optimizer"] = True  # multi-gpu not supported
 
 def execution_plan(workers, config):
-    local_replay_buffer = LocalReplayBuffer(
+    # local_replay_buffer = LocalReplayBuffer(
+    #     num_shards=1,
+    #     learning_starts=config["learning_starts"],
+    #     buffer_size=config["buffer_size"],
+    #     replay_batch_size=config["replay_batch_size"],
+    #     prioritized_replay_alpha=None,
+    #     prioritized_replay_beta=None,
+    #     prioritized_replay_eps=None)
+
+    local_replay_buffer = LocalBatchReplayBuffer(
         num_shards=1,
         learning_starts=config["learning_starts"],
-        buffer_size=config["buffer_size"],
-        replay_batch_size=config["replay_batch_size"])
+        buffer_size=config["buffer_size"])
 
     # Collects experiences in parallel from multiple RolloutWorker actors.
     rollouts = ParallelRollouts(workers, mode="bulk_sync")
@@ -202,11 +211,13 @@ def execution_plan(workers, config):
     slow_train_op = rollouts \
         .combine(ConcatBatches(
             min_batch_size=config["train_batch_size"])) \
+        .for_each(StoreToReplayBuffer(local_buffer=local_replay_buffer)) \
         .for_each(TrainOneStep(workers))
+        
 
     # (1) Generate rollouts and store them in our local replay buffer.
-    store_op = rollouts.for_each(
-        StoreToReplayBuffer(local_buffer=local_replay_buffer))
+    # store_op = rollouts.for_each(
+    #     StoreToReplayBuffer(local_buffer=local_replay_buffer))
 
     # (2) Read and train on experiences from the replay buffer.
     replay_op = Replay(local_buffer=local_replay_buffer) \
@@ -214,7 +225,7 @@ def execution_plan(workers, config):
 
     # Alternate deterministically
     train_op = Concurrently(
-        [store_op, slow_train_op, replay_op], mode="round_robin", output_indexes=[1])
+        [replay_op, slow_train_op], mode="round_robin", output_indexes=[1])
 
     # Add on the standard episode reward, etc. metrics reporting. This returns
     # a LocalIterator[metrics_dict] representing metrics for each train step.

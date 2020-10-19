@@ -25,6 +25,7 @@ from ray.rllib.utils.actors import TaskPool, create_colocated
 from ray.rllib.utils.memory import ray_get_and_free
 from ray.rllib.utils.timer import TimerStat
 from ray.rllib.utils.window_stat import WindowStat
+from collections import deque
 
 SAMPLE_QUEUE_DEPTH = 2
 REPLAY_QUEUE_DEPTH = 4
@@ -392,13 +393,11 @@ class LocalBatchReplayBuffer(LocalReplayBuffer):
     This allows for RNN models, but ignores prioritization params.
     """
 
-    def __init__(self, num_shards, learning_starts, buffer_size,
-                 train_batch_size, prioritized_replay_alpha,
-                 prioritized_replay_beta, prioritized_replay_eps):
+    def __init__(self, num_shards, learning_starts, buffer_size, prioritized_replay_alpha=None,
+                 prioritized_replay_beta=None, prioritized_replay_eps=None):
         self.replay_starts = learning_starts // num_shards
         self.buffer_size = buffer_size // num_shards
-        self.train_batch_size = train_batch_size
-        self.buffer = []
+        self.buffer = deque()
 
         # Metrics
         self.num_added = 0
@@ -412,7 +411,7 @@ class LocalBatchReplayBuffer(LocalReplayBuffer):
         self.cur_size += batch.count
         self.num_added += batch.count
         while self.cur_size > self.buffer_size:
-            self.cur_size -= self.buffer.pop(0).count
+            self.cur_size -= self.buffer.popleft().count
 
     def replay(self):
         if self.num_added < self.replay_starts:
