@@ -46,6 +46,8 @@ class StoreToReplayBuffer:
     def __call__(self, batch: SampleBatchType):
         batch_size = len(batch[SampleBatch.ACTIONS])
         new_batch = {}
+        for key in batch:
+            new_batch[key] = np.array([0]*batch_size)
         new_batch[SampleBatch.EMBEDDING] = batch[SampleBatch.EMBEDDING]
         new_batch[SampleBatch.ACTIONS] = batch[SampleBatch.ACTIONS]
         new_batch[Postprocessing.VALUE_TARGETS] = batch[Postprocessing.VALUE_TARGETS]
