@@ -26,7 +26,7 @@ from ray.rllib.utils.memory import ray_get_and_free
 from ray.rllib.utils.timer import TimerStat
 from ray.rllib.utils.window_stat import WindowStat
 from collections import deque, defaultdict
-from scipy import stats
+import numpy as np
 
 SAMPLE_QUEUE_DEPTH = 2
 REPLAY_QUEUE_DEPTH = 4
@@ -437,13 +437,12 @@ class LocalBatchReplayBuffer(LocalReplayBuffer):
 
 BatchReplayActor = ray.remote(num_cpus=0)(LocalBatchReplayBuffer)
 
-class your_distribution(stats.rv_continuous):
+class TailHeavyDist:
     def __init__(self, max_val):
         self.max_val = max_val
-
-    def _pdf(self, x):
-        if x < 0 or x > max_val: return 0
-        return x * 2 / max_val*max_val
+    def sample(self, size):
+        uni = np.random.uniform(size=size)
+        return self.max_val * np.sqrt(uni)
 
 class MyLocalReplayBuffer(LocalReplayBuffer):
     """The batch replay version of the replay actor.
@@ -491,8 +490,8 @@ class MyLocalReplayBuffer(LocalReplayBuffer):
         if self.num_added < self.replay_starts:
             return None
         
-        distribution = your_distribution(self.cur_size)
-        idxes = distribution.rvs(size=self.replay_batch_size)
+        distribution = TailHeavyDist(self.cur_size)
+        idxes = distribution.sample(self.replay_batch_size)
         idxes = np.array([min(self.cur_size-1, int(i)) for i in idxes], np.int32)
         batch = {}
         for k in self.buffer:
