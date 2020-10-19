@@ -9,7 +9,7 @@ from .rollout_ops import ParallelRollouts, ConcatBatches
 from .train_ops import TrainOneStep
 from ray.rllib.execution.metric_ops import StandardMetricsReporting
 from .replay_ops import Replay, StoreToReplayBuffer
-from .concurrency_ops import Concurrently
+from ray.rllib.execution.concurrency_ops import Concurrently
 from .async_replay_optimizer import LocalReplayBuffer, LocalBatchReplayBuffer
 
 
@@ -225,9 +225,11 @@ def execution_plan(workers, config):
     replay_op = Replay(local_buffer=local_replay_buffer) \
         .for_each(TrainOneStep(workers, num_sgd_iter = config["num_sgd_iter_replay"], sgd_minibatch_size = config["sgd_minibatch_size_replay"]))
 
+    ops = [slow_train_op]
+    for _ in range(config["replay_per_collect"]):
+        ops.append(replay_op)
     # Alternate deterministically
-    train_op = Concurrently(
-        [slow_train_op, replay_op], mode="round_robin", output_indexes=[0], round_robin_weights=[1, config["replay_per_collect"]])
+    train_op = Concurrently(ops , mode="round_robin", output_indexes=[0])
 
     # Add on the standard episode reward, etc. metrics reporting. This returns
     # a LocalIterator[metrics_dict] representing metrics for each train step.
