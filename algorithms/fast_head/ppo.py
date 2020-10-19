@@ -5,7 +5,7 @@ from .ppo_tf_policy import PPOTFPolicy
 from ray.rllib.agents.trainer_template import build_trainer
 from ray.rllib.optimizers import SyncSamplesOptimizer, LocalMultiGPUOptimizer
 from ray.rllib.utils import try_import_tf
-from ray.rllib.execution.rollout_ops import ParallelRollouts, ConcatBatches
+from .rollout_ops import ParallelRollouts, ConcatBatches
 from .train_ops import TrainOneStep
 from ray.rllib.execution.metric_ops import StandardMetricsReporting
 from .replay_ops import Replay, StoreToReplayBuffer
