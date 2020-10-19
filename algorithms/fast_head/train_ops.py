@@ -14,11 +14,12 @@ from .common import SampleBatchType, \
     NUM_TARGET_UPDATES, _get_global_vars, _check_sample_batch_type, \
     _get_shared_metrics
 # from ray.rllib.execution.multi_gpu_impl import LocalSyncParallelOptimizer
-from ray.rllib.policy.policy import PolicyID
+# from ray.rllib.policy.policy import PolicyID
+PolicyID = str
 from .sample_batch import SampleBatch, DEFAULT_POLICY_ID, \
     MultiAgentBatch
 from ray.rllib.utils import try_import_tf
-from ray.rllib.utils.sgd import do_minibatch_sgd, averaged
+from ray.rllib.utils.sgd import do_minibatch_sgd #, averaged
 
 tf = try_import_tf()
 
