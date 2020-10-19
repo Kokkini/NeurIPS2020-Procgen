@@ -9,7 +9,7 @@ from .rollout_ops import ParallelRollouts, ConcatBatches
 from .train_ops import TrainOneStep
 from ray.rllib.execution.metric_ops import StandardMetricsReporting
 from .replay_ops import Replay, StoreToReplayBuffer
-from ray.rllib.execution.concurrency_ops import Concurrently
+from .concurrency_ops import Concurrently
 from .async_replay_optimizer import LocalReplayBuffer, LocalBatchReplayBuffer
 
 
