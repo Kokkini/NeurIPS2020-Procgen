@@ -25,7 +25,8 @@ from ray.rllib.utils.actors import TaskPool, create_colocated
 from ray.rllib.utils.memory import ray_get_and_free
 from ray.rllib.utils.timer import TimerStat
 from ray.rllib.utils.window_stat import WindowStat
-from collections import deque
+from collections import deque, defaultdict
+from scipy import stats
 
 SAMPLE_QUEUE_DEPTH = 2
 REPLAY_QUEUE_DEPTH = 4
@@ -435,6 +436,79 @@ class LocalBatchReplayBuffer(LocalReplayBuffer):
 
 
 BatchReplayActor = ray.remote(num_cpus=0)(LocalBatchReplayBuffer)
+
+class your_distribution(stats.rv_continuous):
+    def __init__(self, max_val):
+        self.max_val = max_val
+
+    def _pdf(self, x):
+        if x < 0 or x > max_val: return 0
+        return x * 2 / max_val*max_val
+
+class MyLocalReplayBuffer(LocalReplayBuffer):
+    """The batch replay version of the replay actor.
+
+    This allows for RNN models, but ignores prioritization params.
+    """
+
+    def __init__(self, num_shards, learning_starts, buffer_size, replay_batch_size, prioritized_replay_alpha=None,
+                 prioritized_replay_beta=None, prioritized_replay_eps=None):
+        self.replay_starts = learning_starts // num_shards
+        self.buffer_size = buffer_size // num_shards
+        self.buffer = defaultdict(deque)
+        self.replay_batch_size = replay_batch_size
+
+        # Metrics
+        self.num_added = 0
+        self.cur_size = 0
+
+    def add_batch(self, batch):
+        if isinstance(batch, MultiAgentBatch):
+            print("No support for MultiAgentBatch yet")
+            exit(1)
+        batch_size = len(batch[SampleBatch.ACTIONS])
+        for k in batch:
+            self.buffer[k] += list(batch[k])
+
+        self.cur_size += batch.count
+        self.num_added += batch.count
+        for k in self.buffer:
+            for _ in range(self.cur_size - self.buffer_size):
+                self.buffer[k].popleft()
+        self.cur_size = min(self.cur_size, self.buffer_size)
+
+    def replay(self):
+        if self.num_added < self.replay_starts:
+            return None
+        idxes = np.random.choice(self.cur_size, self.replay_batch_size, replace=False)
+        batch = {}
+        for k in self.buffer:
+            batch[k] = np.array([self.buffer[k][i] for i in idxes])
+        batch = SampleBatch(batch)
+        return batch
+
+    def replay_heavy_tail(self):
+        if self.num_added < self.replay_starts:
+            return None
+        
+        distribution = your_distribution(self.cur_size)
+        idxes = distribution.rvs(size=self.replay_batch_size)
+        idxes = np.array([min(self.cur_size-1, int(i)) for i in idxes], np.int32)
+        batch = {}
+        for k in self.buffer:
+            batch[k] = np.array([self.buffer[k][i] for i in idxes])
+        batch = SampleBatch(batch)
+        return batch
+
+    def update_priorities(self, prio_dict):
+        pass
+
+    def stats(self, debug=False):
+        stat = {
+            "cur_size": self.cur_size,
+            "num_added": self.num_added,
+        }
+        return stat
 
 
 class LearnerThread(threading.Thread):

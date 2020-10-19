@@ -10,7 +10,7 @@ from .train_ops import TrainOneStep
 from ray.rllib.execution.metric_ops import StandardMetricsReporting
 from .replay_ops import Replay, StoreToReplayBuffer, ReplayHeavyTail
 from ray.rllib.execution.concurrency_ops import Concurrently
-from .async_replay_optimizer import LocalReplayBuffer, LocalBatchReplayBuffer
+from .async_replay_optimizer import LocalReplayBuffer, LocalBatchReplayBuffer, MyLocalReplayBuffer
 
 
 
@@ -31,9 +31,9 @@ DEFAULT_CONFIG = with_common_config({
     # If true, use the Generalized Advantage Estimator (GAE)
     # with a value function, see https://arxiv.org/pdf/1506.02438.pdf.
     "use_gae": False,
-    "learning_starts": 10000,
-    "buffer_size": 20000,
-    # "replay_batch_size": 2000,
+    "learning_starts": 100000,
+    "buffer_size": 1000000,
+    "replay_batch_size": 50000,
     # The GAE(lambda) parameter.
     "lambda": 1.0,
     # Initial coefficient for KL divergence.
@@ -200,10 +200,17 @@ def execution_plan(workers, config):
     #     prioritized_replay_beta=None,
     #     prioritized_replay_eps=None)
 
-    local_replay_buffer = LocalBatchReplayBuffer(
+    # local_replay_buffer = LocalBatchReplayBuffer(
+    #     num_shards=1,
+    #     learning_starts=config["learning_starts"],
+    #     buffer_size=config["buffer_size"])
+
+    local_replay_buffer = MyLocalReplayBuffer(
         num_shards=1,
         learning_starts=config["learning_starts"],
-        buffer_size=config["buffer_size"])
+        buffer_size=config["buffer_size"],
+        replay_batch_size=config["replay_batch_size"]
+        )
 
     # Collects experiences in parallel from multiple RolloutWorker actors.
     rollouts = ParallelRollouts(workers, mode="bulk_sync")
@@ -222,15 +229,15 @@ def execution_plan(workers, config):
     #     StoreToReplayBuffer(local_buffer=local_replay_buffer))
 
     # (2) Read and train on experiences from the replay buffer.
-    replay_op = Replay(local_buffer=local_replay_buffer) \
-        .for_each(TrainOneStep(workers, num_sgd_iter = config["num_sgd_iter_replay"], sgd_minibatch_size = config["sgd_minibatch_size_replay"]))
+    # replay_op = Replay(local_buffer=local_replay_buffer) \
+    #     .for_each(TrainOneStep(workers, num_sgd_iter = config["num_sgd_iter_replay"], sgd_minibatch_size = config["sgd_minibatch_size_replay"]))
 
     replay_tail_op = ReplayHeavyTail(local_buffer=local_replay_buffer) \
         .for_each(TrainOneStep(workers, num_sgd_iter = config["num_sgd_iter_replay"], sgd_minibatch_size = config["sgd_minibatch_size_replay"]))
 
     ops = [slow_train_op, replay_tail_op]
-    for _ in range(config["replay_per_collect"]):
-        ops.append(replay_op)
+    # for _ in range(config["replay_per_collect"]):
+    #     ops.append(replay_op)
     # Alternate deterministically
     train_op = Concurrently(ops , mode="round_robin", output_indexes=[0])
 
