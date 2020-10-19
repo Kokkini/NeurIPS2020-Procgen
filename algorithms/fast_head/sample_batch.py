@@ -4,13 +4,14 @@ import numpy as np
 from ray.rllib.utils.annotations import PublicAPI, DeveloperAPI
 from ray.rllib.utils.compression import pack, unpack, is_compressed
 from ray.rllib.utils.memory import concat_aligned
+import ray.rllib.policy.sample_batch as their_sample_batch
 
 # Default policy id for single agent environments
 DEFAULT_POLICY_ID = "default_policy"
 
 
 @PublicAPI
-class SampleBatch:
+class SampleBatch(their_sample_batch.SampleBatch):
     """Wrapper around a dictionary with string keys and array-like values.
 
     For example, {"obs": [1, 2, 3], "reward": [0, -1, 1]} is a batch of three
@@ -232,7 +233,7 @@ class SampleBatch:
 
 
 @PublicAPI
-class MultiAgentBatch:
+class MultiAgentBatch(their_sample_batch.MultiAgentBatch):
     """A batch of experiences from multiple policies in the environment.
 
     Attributes:

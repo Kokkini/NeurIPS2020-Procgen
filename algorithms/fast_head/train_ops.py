@@ -19,7 +19,7 @@ PolicyID = str
 from .sample_batch import SampleBatch, DEFAULT_POLICY_ID, \
     MultiAgentBatch
 from ray.rllib.utils import try_import_tf
-from ray.rllib.utils.sgd import do_minibatch_sgd #, averaged
+from .sgd import do_minibatch_sgd #, averaged
 
 tf = try_import_tf()
 
