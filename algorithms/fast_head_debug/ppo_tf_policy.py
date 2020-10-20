@@ -172,7 +172,7 @@ class PPOLoss:
 
         self.loss = tf.cond(tf.reduce_all(train_batch[Postprocessing.FROM_BUFFER]),
                             lambda : fast_loss_coeff * self.get_fast_loss(model, train_batch),
-                            lambda : self.get_slow_loss(model, train_batch) + fast_loss_coeff * self.get_fast_loss(model, train_batch))
+                            lambda : fast_loss_coeff * self.get_fast_loss(model, train_batch))
 
     def get_slow_loss(self, model, train_batch):
         logits, state = model.from_batch(train_batch)
@@ -341,7 +341,7 @@ PPOTFPolicy = build_tf_policy(
     stats_fn=kl_and_loss_stats,
     extra_action_fetches_fn=vf_preds_fetches,
     postprocess_fn=postprocess_ppo_gae,
-    gradients_fn=clip_gradients,
+    # gradients_fn=clip_gradients,
     before_init=setup_config,
     before_loss_init=setup_mixins,
     mixins=[

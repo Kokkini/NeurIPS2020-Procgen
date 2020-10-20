@@ -12,6 +12,10 @@ def conv_layer(depth, regularizer, name):
     )
 
 
+def conv_layer_stride(depth, stride):
+    return tf.keras.layers.Conv2D(
+        filters=depth, kernel_size=3, strides=stride, padding="same")
+
 def residual_block(x, depth, regularizer, prefix):
     inputs = x
     assert inputs.get_shape()[-1].value == depth
@@ -71,25 +75,28 @@ class FastHeadNet(TFModelV2):
         scaled_inputs = tf.cast(inputs, tf.float32) / 255.0
 
         x = scaled_inputs
+        # for i, depth in enumerate(depths):
+        #     x = conv_sequence(x, depth, regu, prefix=f"seq{i}")
         for i, depth in enumerate(depths):
-            x = conv_sequence(x, depth, regu, prefix=f"seq{i}")
+            x = conv_layer_stride(depth, 2)(x)
 
         x = tf.keras.layers.Flatten()(x)
-        x = tf.keras.layers.ReLU()(x)
-        x = tf.keras.layers.Dense(units=256, activation="relu", name="hidden")(x)
+        # x = tf.keras.layers.ReLU()(x)
+        x = tf.keras.layers.Dense(units=256, name="hidden")(x)
 
         embedding = x
         
         fast_head_1 = tf.keras.layers.Dense(units=256,activation='relu')
-        fast_head_2 = tf.keras.layers.Dense(units=num_outputs)
+        fast_head_2 = tf.keras.layers.Dense(units=256,activation='relu')
+        fast_head_3 = tf.keras.layers.Dense(units=num_outputs)
 
-        logits = fast_head_2(fast_head_1(x))
+        logits = fast_head_3(fast_head_2(fast_head_1(x)))
 
         # value = tf.keras.layers.Dense(units=1, name="vf")(x)
         self.base_model = tf.keras.Model(inputs, [logits, embedding])
 
         fast_head_inputs = tf.keras.layers.Input(shape=[256], name="embedding")
-        fast_head_out = fast_head_2(fast_head_1(fast_head_inputs))
+        fast_head_out = fast_head_3(fast_head_2(fast_head_1(fast_head_inputs)))
 
         self.fast_head_model = tf.keras.Model(fast_head_inputs, fast_head_out)
 
