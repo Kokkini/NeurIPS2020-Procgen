@@ -104,8 +104,8 @@ def do_minibatch_sgd(samples, policies, local_worker, num_sgd_iter,
             continue
 
         batch = samples.policy_batches[policy_id]
-        for field in standardize_fields: # standardize_fields=[] for fast_head trainer
-            batch[field] = standardized(batch[field]) # change to normal distribution
+        for field in standardize_fields:
+            batch[field] = standardized(batch[field])
 
         for i in range(num_sgd_iter):
             iter_extra_fetches = defaultdict(list)
@@ -113,7 +113,7 @@ def do_minibatch_sgd(samples, policies, local_worker, num_sgd_iter,
                 batch_fetches = (local_worker.learn_on_batch(
                     MultiAgentBatch({
                         policy_id: minibatch
-                    }, minibatch.count)))[policy_id] # what does it fetch here?
+                    }, minibatch.count)))[policy_id]
                 for k, v in batch_fetches.get(LEARNER_STATS_KEY, {}).items():
                     iter_extra_fetches[k].append(v)
             logger.debug("{} {}".format(i, averaged(iter_extra_fetches)))

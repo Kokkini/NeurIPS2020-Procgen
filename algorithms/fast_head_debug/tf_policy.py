@@ -359,7 +359,7 @@ class TFPolicy(Policy):
     def learn_on_batch(self, postprocessed_batch):
         assert self.loss_initialized()
         builder = TFRunBuilder(self._sess, "learn_on_batch")
-        fetches = self._build_learn_on_batch(builder, postprocessed_batch) 
+        fetches = self._build_learn_on_batch(builder, postprocessed_batch)
         return builder.get(fetches)
 
     @override(Policy)
@@ -653,8 +653,8 @@ class TFPolicy(Policy):
         fetches = builder.add_fetches([
             self._apply_op,
             self._get_grad_and_stats_fetches(),
-        ]) # a list of numbers, indices of the added fetches
-        return fetches[1] # index of _get_grad_and_stats_fetches
+        ])
+        return fetches[1]
 
     def _get_grad_and_stats_fetches(self):
         fetches = self.extra_compute_grad_fetches()
