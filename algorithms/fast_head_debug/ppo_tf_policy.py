@@ -172,7 +172,7 @@ class PPOLoss:
 
         self.loss = tf.cond(tf.reduce_all(train_batch[Postprocessing.FROM_BUFFER]),
                             lambda : fast_loss_coeff * self.get_fast_loss(model, train_batch),
-                            lambda : self.get_slow_loss(model, train_batch))
+                            lambda : self.get_slow_loss(model, train_batch) + fast_loss_coeff * self.get_fast_loss(model, train_batch))
 
     def get_slow_loss(self, model, train_batch):
         logits, state = model.from_batch(train_batch)

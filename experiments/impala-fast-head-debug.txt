@@ -61,7 +61,7 @@ procgen-ppo:
         # === Environment Settings ===
         ################################################
         ################################################
-        fast_loss_coeff: 0.5
+        fast_loss_coeff: 0.25
         use_gae: False
         use_critic: True
         learning_starts: 50000
