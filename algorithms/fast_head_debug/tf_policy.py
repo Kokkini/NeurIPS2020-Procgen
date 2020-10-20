@@ -179,7 +179,7 @@ class TFPolicy(Policy):
         self._loss = None
         # A batch dict passed into loss function as input.
         self._loss_input_dict = None
-        if loss is not None:
+        if loss is not None: # loss is None so this won't run
             self._initialize_loss(loss, loss_inputs)
 
         # The log-likelihood calculator op.
@@ -356,7 +356,7 @@ class TFPolicy(Policy):
         builder.get(fetches)
 
     @override(Policy)
-    def learn_on_batch(self, postprocessed_batch):
+    def learn_on_batch(self, postprocessed_batch): # among apply_gradients, compute_gradients, learn_on_batch, only learn_on_batch is run
         assert self.loss_initialized()
         builder = TFRunBuilder(self._sess, "learn_on_batch")
         fetches = self._build_learn_on_batch(builder, postprocessed_batch)
@@ -626,7 +626,7 @@ class TFPolicy(Policy):
 
     def _build_compute_gradients(self, builder, postprocessed_batch):
         self._debug_vars()
-        builder.add_feed_dict(self.extra_compute_grad_feed_dict())
+        builder.add_feed_dict(self.extra_compute_grad_feed_dict()) # add nothing
         builder.add_feed_dict({self._is_training: True})
         builder.add_feed_dict(
             self._get_loss_inputs_dict(postprocessed_batch, shuffle=False))
@@ -646,14 +646,14 @@ class TFPolicy(Policy):
 
     def _build_learn_on_batch(self, builder, postprocessed_batch):
         self._debug_vars()
-        builder.add_feed_dict(self.extra_compute_grad_feed_dict())
+        builder.add_feed_dict(self.extra_compute_grad_feed_dict()) # add nothing
         builder.add_feed_dict(
             self._get_loss_inputs_dict(postprocessed_batch, shuffle=False))
         builder.add_feed_dict({self._is_training: True})
         fetches = builder.add_fetches([
             self._apply_op,
-            self._get_grad_and_stats_fetches(),
-        ])
+            self._get_grad_and_stats_fetches(), # has cur_lr and total_loss
+        ]) # there are only these 2 fetches for learning.
         return fetches[1]
 
     def _get_grad_and_stats_fetches(self):
