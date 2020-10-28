@@ -56,6 +56,7 @@ class SubtractNet(TFModelV2):
         super().__init__(obs_space, action_space, num_outputs, model_config, name)
         depths = model_config.get("custom_options", {}).get("depths", [16, 32, 32])
         regu = model_config.get("custom_options", {}).get("regu", 0)
+        trainable_temperature = model_config.get("custom_options", {}).get("trainable_temperature", False)
         self.original_shape = obs_space.shape
         print("obs space:", obs_space.shape)
         channels = obs_space.shape[-1]
@@ -77,6 +78,10 @@ class SubtractNet(TFModelV2):
         x = tf.keras.layers.Dense(units=256, activation="relu", name="hidden", kernel_regularizer=dense_regularizer)(x)
         logits = tf.keras.layers.Dense(units=num_outputs, name="pi", kernel_regularizer=dense_regularizer)(x)
         value = tf.keras.layers.Dense(units=1, name="vf")(x)
+        if trainable_temperature:
+            temperature = tf.Variable(initial_value=1.0, trainable=True, name="temperature", constraint=lambda x: tf.clip_by_value(x, 0.2, 5))
+            logits = logits / temperature
+        
         self.base_model = tf.keras.Model(inputs, [logits, value])
         self.register_variables(self.base_model.variables)
 
