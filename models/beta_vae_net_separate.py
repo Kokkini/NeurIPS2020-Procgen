@@ -156,6 +156,12 @@ class BetaVaeNetSeparate(TFModelV2):
     def forward(self, input_dict, state, seq_lens):
         # explicit cast to float32 needed in eager
         obs = tf.cast(input_dict["obs"], tf.float32)
+        subtract_mask = np.zeros([1] + list(self.original_shape))
+        subtract_mask[...,3:] = 1
+        subtract_part = subtract_mask * obs
+        subtract_part = subtract_part * 2 - 255 + 1   #plus 1 to make the background 0 instead of -1
+        obs = obs * (1-subtract_mask) + subtract_part * subtract_mask
+        
         obs = tf.image.pad_to_bounding_box(obs,
                                     tf.random.uniform(shape=[], minval=0,
                                                       maxval=self.pad_shape[0] - 64,

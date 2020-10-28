@@ -1,5 +1,5 @@
 procgen-ppo:
-    env: my_procgen_wrapper  # Change this at your own risk :D
+    env: my_procgen_wrapper_uint8  # Change this at your own risk :D
     #disable_evaluation_worker: True
     run: BetaVaePPO
 
@@ -110,7 +110,7 @@ procgen-ppo:
                 use_vae_features: True
                 use_impala_features: True
                 regu: 0
-                dense_regu: 0.001
+                dense_regu: 0.01
 
         num_workers: 6
         num_envs_per_worker: 8
