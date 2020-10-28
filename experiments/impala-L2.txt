@@ -199,6 +199,7 @@ procgen-ppo:
             # Extra options to pass to custom class
             custom_options:
                 depths: [32,64,64]
+                regu: 0.00003
 
         ################################################
         ################################################
