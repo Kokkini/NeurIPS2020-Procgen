@@ -43,7 +43,7 @@ def random_crop(obs, is_training, crop_shape, original_shape):
         w = crop_shape[1]
         return tf.image.crop_to_bounding_box(obs, y1, x1, h, w)
 
-class TemperatureLayer(keras.layers.Layer):
+class TemperatureLayer(tf.keras.layers.Layer):
     def __init__(self):
         super(TemperatureLayer, self).__init__()
         self.temperature = tf.Variable(initial_value=1.0, trainable=True, name="temperature", constraint=lambda x: tf.clip_by_value(x, 0.2, 5))
