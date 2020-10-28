@@ -24,8 +24,8 @@ def residual_block(x, depth, regularizer, prefix):
 
 def conv_sequence(x, depth, regu, prefix):
     regularizer = None
-    if regu:
-        regularizer = tf.keras.regularizers.L2(l2=0.01)
+    if regu > 0:
+        regularizer = tf.keras.regularizers.L2(l2=regu)
     x = conv_layer(depth, regularizer, prefix + "_conv")(x)
     x = tf.keras.layers.MaxPool2D(pool_size=3, strides=2, padding="same")(x)
     x = residual_block(x, depth, regularizer, prefix=prefix + "_block0")
@@ -83,12 +83,12 @@ class BetaVaeNetSeparate(TFModelV2):
         depths = model_config.get("custom_options", {}).get("depths", [16, 32, 32])
         vae_depths = model_config.get("custom_options", {}).get("vae_depths", [16, 32, 32])
         z_dim = model_config.get("custom_options", {}).get("z_dim", 100)
-        regu = model_config.get("custom_options", {}).get("regu", False)
+        regu = model_config.get("custom_options", {}).get("regu", 0)
         vae_grad = model_config.get("custom_options", {}).get("vae_grad", True)
         vae_norm = model_config.get("custom_options", {}).get("vae_norm", False)
         use_vae_features = model_config.get("custom_options", {}).get("use_vae_features", True)
         use_impala_features = model_config.get("custom_options", {}).get("use_impala_features", True)
-        dense_regu = model_config.get("custom_options", {}).get("dense_regu", False)
+        dense_regu = model_config.get("custom_options", {}).get("dense_regu", 0)
         # dense_depths = model_config.get("custom_options", {}).get("dense_depths", [256])
         self.original_shape = obs_space.shape
         print("obs space:", obs_space.shape)
@@ -137,8 +137,8 @@ class BetaVaeNetSeparate(TFModelV2):
             exit(1)
         
         regularizer = None
-        if dense_regu:
-            regularizer = tf.keras.regularizers.l1(l=0.01)
+        if dense_regu > 0:
+            regularizer = tf.keras.regularizers.l1(l=dense_regu)
         x = tf.keras.layers.Dense(256, kernel_regularizer=regularizer)(x)
 
         # for ix in range(1, len(dense_depths)):

@@ -24,8 +24,8 @@ def residual_block(x, depth, regularizer, prefix):
 
 def conv_sequence(x, depth, regu, prefix):
     regularizer = None
-    if regu:
-        regularizer = tf.keras.regularizers.L2(l2=0.01)
+    if regu > 0:
+        regularizer = tf.keras.regularizers.L2(l2=regu)
     x = conv_layer(depth, regularizer, prefix + "_conv")(x)
     x = tf.keras.layers.MaxPool2D(pool_size=3, strides=2, padding="same")(x)
     x = residual_block(x, depth, regularizer, prefix=prefix + "_block0")
@@ -55,7 +55,7 @@ class SubtractNet(TFModelV2):
     def __init__(self, obs_space, action_space, num_outputs, model_config, name):
         super().__init__(obs_space, action_space, num_outputs, model_config, name)
         depths = model_config.get("custom_options", {}).get("depths", [16, 32, 32])
-        regu = model_config.get("custom_options", {}).get("regu", False)
+        regu = model_config.get("custom_options", {}).get("regu", 0)
         self.original_shape = obs_space.shape
         print("obs space:", obs_space.shape)
         channels = obs_space.shape[-1]
@@ -71,8 +71,11 @@ class SubtractNet(TFModelV2):
 
         x = tf.keras.layers.Flatten()(x)
         x = tf.keras.layers.ReLU()(x)
-        x = tf.keras.layers.Dense(units=256, activation="relu", name="hidden")(x)
-        logits = tf.keras.layers.Dense(units=num_outputs, name="pi")(x)
+        dense_regularizer = None
+        if regu > 0:
+            dense_regularizer = tf.keras.regularizers.L2(l2=regu)
+        x = tf.keras.layers.Dense(units=256, activation="relu", name="hidden", kernel_regularizer=dense_regularizer)(x)
+        logits = tf.keras.layers.Dense(units=num_outputs, name="pi", kernel_regularizer=dense_regularizer)(x)
         value = tf.keras.layers.Dense(units=1, name="vf")(x)
         self.base_model = tf.keras.Model(inputs, [logits, value])
         self.register_variables(self.base_model.variables)

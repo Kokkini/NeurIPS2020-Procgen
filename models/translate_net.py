@@ -23,8 +23,8 @@ def residual_block(x, depth, regularizer, prefix):
 
 def conv_sequence(x, depth, regu, prefix):
     regularizer = None
-    if regu:
-        regularizer = tf.keras.regularizers.L2(l2=0.01)
+    if regu > 0:
+        regularizer = tf.keras.regularizers.L2(l2=regu)
     x = conv_layer(depth, regularizer, prefix + "_conv")(x)
     x = tf.keras.layers.MaxPool2D(pool_size=3, strides=2, padding="same")(x)
     x = residual_block(x, depth, regularizer, prefix=prefix + "_block0")
@@ -54,7 +54,7 @@ class TranslateNet(TFModelV2):
     def __init__(self, obs_space, action_space, num_outputs, model_config, name):
         super().__init__(obs_space, action_space, num_outputs, model_config, name)
         depths = model_config.get("custom_options", {}).get("depths", [16, 32, 32])
-        regu = model_config.get("custom_options", {}).get("regu", False)
+        regu = model_config.get("custom_options", {}).get("regu", 0)
         self.original_shape = obs_space.shape
         print("obs space:", obs_space.shape)
         channels = obs_space.shape[-1]
