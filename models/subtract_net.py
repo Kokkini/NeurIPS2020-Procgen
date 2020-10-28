@@ -43,6 +43,14 @@ def random_crop(obs, is_training, crop_shape, original_shape):
         w = crop_shape[1]
         return tf.image.crop_to_bounding_box(obs, y1, x1, h, w)
 
+class TemperatureLayer(keras.layers.Layer):
+    def __init__(self):
+        super(TemperatureLayer, self).__init__()
+        self.temperature = tf.Variable(initial_value=1.0, trainable=True, name="temperature", constraint=lambda x: tf.clip_by_value(x, 0.2, 5))
+
+    def call(self, inputs):
+        return inputs / self.temperature
+
 
 class SubtractNet(TFModelV2):
     """
@@ -79,8 +87,7 @@ class SubtractNet(TFModelV2):
         logits = tf.keras.layers.Dense(units=num_outputs, name="pi", kernel_regularizer=dense_regularizer)(x)
         value = tf.keras.layers.Dense(units=1, name="vf")(x)
         if trainable_temperature:
-            temperature = tf.Variable(initial_value=1.0, trainable=True, name="temperature", constraint=lambda x: tf.clip_by_value(x, 0.2, 5))
-            logits = logits / temperature
+            logits = TemperatureLayer()(logits)
         
         self.base_model = tf.keras.Model(inputs, [logits, value])
         self.register_variables(self.base_model.variables)
