@@ -29,7 +29,7 @@ class StackAndSubtract(Wrapper):
     def _get_observation(self):
         assert len(self.frames) == self.queue_length, (len(self.frames), self.queue_length)
         subtract = (self.frames[-1] - self.frames[0] + 255) // 2
-        obs = np.concatenate(list[self.frames] +[subtract], axis=-1)
+        obs = np.concatenate(list(self.frames) +[subtract], axis=-1)
         obs = obs.astype(np.uint8)
         return obs
 
