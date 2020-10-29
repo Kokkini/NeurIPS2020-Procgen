@@ -12,12 +12,13 @@ from gym import Wrapper
 from envs.utils import RewardNormalizer
 
 class MyProcgenWrapperUINT8(Wrapper):
-    def __init__(self, env, queue_length, hue=False, reward_norm=False):
+    def __init__(self, env, queue_length, hue=False, reward_norm=False, death_penalty=None):
         super(MyProcgenWrapperUINT8, self).__init__(env)
         self.queue_length = queue_length
         self.hue = hue
         self.frames = deque(maxlen=queue_length)
         self.rew_normalizer = None
+        self.death_penalty = death_penalty
         if reward_norm:
             self.rew_normalizer = RewardNormalizer()
 
@@ -51,6 +52,9 @@ class MyProcgenWrapperUINT8(Wrapper):
     def step(self, action):
         observation, reward, done, info = self.env.step(action)
         self.frames.append(observation.astype(np.int32))
+        if self.death_penalty is not None:
+            if done and reward == 0:
+                reward = self.death_penalty
         if self.rew_normalizer is not None:
             reward = self.rew_normalizer.normalize(np.array([reward]), np.array([False]))[0]
         return self._get_observation(), reward, done, info
@@ -62,10 +66,13 @@ class MyProcgenWrapperUINT8(Wrapper):
 
 def create_my_custom_env(config):
     hue = config.pop("hue", False)
-    queue_length = config.pop("queue_length", 2)
+    queue_length = int(config.pop("queue_length", 2))
     reward_norm = config.pop("reward_norm", False)
+    death_penalty = config.pop("death_penalty", None)
+    if death_penalty is not None:
+        death_penalty = float(death_penalty)
     env = ProcgenEnvWrapper(config)
-    env = MyProcgenWrapperUINT8(env, queue_length, hue, reward_norm)
+    env = MyProcgenWrapperUINT8(env, queue_length, hue, reward_norm, death_penalty)
     return env
 
 
