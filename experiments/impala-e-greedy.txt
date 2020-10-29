@@ -1,7 +1,7 @@
 procgen-ppo:
     env: my_procgen_wrapper_uint8  # Change this at your own risk :D
     run: PPO
-    #disable_evaluation_worker: True
+    disable_evaluation_worker: True
     # Can be replaced by any of the available agents as described at : 
     # https://github.com/ray-project/ray/blob/master/rllib/agents/registry.py#L103
     # 
@@ -18,7 +18,7 @@ procgen-ppo:
     ################################################
     stop:
         timesteps_total: 8000000
-        #time_total_s: 7200
+        time_total_s: 7200
 
     ################################################
     # === Settings for Checkpoints ===
@@ -280,15 +280,12 @@ procgen-ppo:
             # You can also provide the python class directly or the full location
             # of your class (e.g. "ray.rllib.utils.exploration.epsilon_greedy.
             # EpsilonGreedy)
-            type: SoftQ
-            temperature: 1.0
-            # Can add constructor kwargs here (if any)
-        
-        evaluation_config:
-            explore: True
-            exploration_config:
-                type: SoftQ
-                temperature: 1.0
+            type: EpsilonGreedy
+            initial_epsilon: 1.0
+            final_epsilon: 0.05
+            epsilon_timesteps: 100000
+            
+
         ################################################
         ################################################
         # === Advanced Rollout Settings ===
