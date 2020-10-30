@@ -197,8 +197,8 @@ def postprocess_ppo_gae(policy,
     for i,ob in enumerate(obs):
         # color_mask = np.zeros(ob.shape, dtype=np.uint8)
         h, w = np.random.randint(4, 16, size=2, dtype=np.int32)
-        r = np.random.randint(0, ob.shape[0]-h+1, size=1, dtype=np.int32)
-        c = np.random.randint(0, ob.shape[1]-w+1, size=1, dtype=np.int32)
+        r = np.random.randint(0, ob.shape[0]-h+1, dtype=np.int32)
+        c = np.random.randint(0, ob.shape[1]-w+1, dtype=np.int32)
         # color_mask[pos[0]:pos[0]+mask_size, pos[1]:pos[1]+mask_size] = 1
         # color_mask = np.expand_dims(color_mask, -1)
         color = np.random.randint(0,256,size=(1,1,3),dtype=np.uint8)
