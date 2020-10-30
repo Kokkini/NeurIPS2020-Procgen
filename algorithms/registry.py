@@ -42,6 +42,10 @@ def _import_fast_head_debug():
     from .fast_head_debug.ppo import FastHeadDebugTrainer
     return FastHeadDebugTrainer
 
+def _import_cutout_color():
+    from .cutout_color.ppo import CutoutColorTrainer
+    return CutoutColorTrainer
+
 
 CUSTOM_ALGORITHMS = {
     "custom/CustomRandomAgent": _import_custom_random_agent,
@@ -51,4 +55,5 @@ CUSTOM_ALGORITHMS = {
     "BetaVaePPOTest": _import_beta_vae_ppo_test,
     "FastHead": _import_fast_head,
     "FastHeadDebug": _import_fast_head_debug,
+    "CutoutColor": _import_cutout_color,
 }
